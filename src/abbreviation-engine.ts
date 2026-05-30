@@ -11,9 +11,30 @@ interface DbEntry {
   bigrams?: Set<string>;
 }
 
-let originalDb: Record<string, string> = {};
-const normalizedDb = new Map<string, DbEntry>();
-let isLoaded = false;
+interface DatabaseState {
+  originalDb: Record<string, string>;
+  normalizedDb: Map<string, DbEntry>;
+  isLoaded: boolean;
+}
+
+const databases: Record<'wos' | 'iso', DatabaseState> = {
+  wos: { originalDb: {}, normalizedDb: new Map(), isLoaded: false },
+  iso: { originalDb: {}, normalizedDb: new Map(), isLoaded: false }
+};
+
+let currentDbSource: 'wos' | 'iso' = 'wos';
+
+export function getDatabaseSource(): 'wos' | 'iso' {
+  return currentDbSource;
+}
+
+export function setDatabaseSource(source: 'wos' | 'iso') {
+  currentDbSource = source;
+}
+
+export function isDatabaseLoaded(source: 'wos' | 'iso'): boolean {
+  return databases[source].isLoaded;
+}
 
 /**
  * Normalizes a string by converting to uppercase, replacing punctuation with spaces,
@@ -53,24 +74,32 @@ function diceCoefficient(setA: Set<string>, setB: Set<string>): number {
 }
 
 /**
- * Loads the Web of Science abbreviations database from public JSON asset.
+ * Loads a journal abbreviations database from public JSON asset.
  */
-export async function loadDatabase(url: string = './wos-abbreviations.json'): Promise<void> {
-  if (isLoaded) return;
+export async function loadDatabase(source: 'wos' | 'iso', url: string): Promise<void> {
+  const dbState = databases[source];
+  if (dbState.isLoaded) return;
   const response = await fetch(url);
-  originalDb = await response.json();
+  const rawData: Record<string, string> = await response.json();
 
-  for (const [key, value] of Object.entries(originalDb)) {
+  for (const [key, value] of Object.entries(rawData)) {
     const normKey = normalizeString(key);
-    // Only map if not empty
     if (normKey) {
-      normalizedDb.set(normKey, {
+      // Normalize abbreviation to upper-case, dotless, clean format
+      const cleanAbbr = value
+        .toUpperCase()
+        .replace(/[.,:]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      dbState.originalDb[key.toUpperCase().trim()] = cleanAbbr;
+      dbState.normalizedDb.set(normKey, {
         originalKey: key,
-        abbreviation: value
+        abbreviation: cleanAbbr
       });
     }
   }
-  isLoaded = true;
+  dbState.isLoaded = true;
 }
 
 /**
@@ -131,11 +160,12 @@ export function findAbbreviationCandidates(
 ): MatchResult[] {
   const upperJournal = journal.toUpperCase().trim();
   const results: MatchResult[] = [];
+  const activeDb = databases[currentDbSource];
 
   // 1. Exact Match (Case-insensitive)
-  if (originalDb[upperJournal]) {
+  if (activeDb.originalDb[upperJournal]) {
     results.push({
-      abbreviation: originalDb[upperJournal],
+      abbreviation: activeDb.originalDb[upperJournal],
       matchType: 'exact',
       originalKey: upperJournal,
       confidence: 1.0
@@ -146,7 +176,7 @@ export function findAbbreviationCandidates(
 
   // Fallback check
   if (strictness === 'strict') {
-    const entry = normalizedDb.get(normJournal);
+    const entry = activeDb.normalizedDb.get(normJournal);
     if (entry && entry.originalKey.toUpperCase() === upperJournal) {
       if (!results.some(r => r.abbreviation === entry.abbreviation)) {
         results.push({
@@ -162,7 +192,7 @@ export function findAbbreviationCandidates(
   }
 
   // 2. Normalized Match
-  const normMatch = normalizedDb.get(normJournal);
+  const normMatch = activeDb.normalizedDb.get(normJournal);
   if (normMatch) {
     if (!results.some(r => r.abbreviation === normMatch.abbreviation)) {
       results.push({
@@ -188,7 +218,7 @@ export function findAbbreviationCandidates(
 
   const fuzzyCandidates: { entry: DbEntry; score: number }[] = [];
 
-  for (const [normKey, entry] of normalizedDb.entries()) {
+  for (const [normKey, entry] of activeDb.normalizedDb.entries()) {
     const lenDiff = Math.abs(normKey.length - normJournal.length);
     const maxLen = Math.max(normKey.length, normJournal.length);
     if (lenDiff > maxLen * 0.45) {

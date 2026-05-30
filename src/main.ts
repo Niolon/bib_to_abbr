@@ -1,6 +1,6 @@
 import './style.css';
 import { findJournalFields, applyReplacements } from './bib-parser';
-import { loadDatabase, findAbbreviationCandidates, formatAbbreviation } from './abbreviation-engine';
+import { loadDatabase, findAbbreviationCandidates, formatAbbreviation, setDatabaseSource, isDatabaseLoaded } from './abbreviation-engine';
 import type { MatchResult } from './abbreviation-engine';
 import type { BibFieldMatch } from './bib-parser';
 
@@ -32,6 +32,7 @@ const thresholdSlider = document.getElementById('thresholdSlider') as HTMLInputE
 const thresholdValue = document.getElementById('thresholdValue') as HTMLSpanElement;
 const targetJournal = document.getElementById('targetJournal') as HTMLInputElement;
 const targetBooktitle = document.getElementById('targetBooktitle') as HTMLInputElement;
+const dbSourceSelect = document.getElementById('dbSource') as HTMLSelectElement;
 const abbrStyleSelect = document.getElementById('abbrStyle') as HTMLSelectElement;
 
 // Stat Elements
@@ -53,7 +54,10 @@ async function init() {
     dbStatus.textContent = 'Loading database...';
     dbStatus.className = 'db-badge loading';
     
-    await loadDatabase('./wos-abbreviations.json');
+    const source = dbSourceSelect.value as 'wos' | 'iso';
+    const url = source === 'iso' ? './iso-abbreviations.json' : './wos-abbreviations.json';
+    setDatabaseSource(source);
+    await loadDatabase(source, url);
     
     databaseLoaded = true;
     dbStatus.textContent = 'Database Ready';
@@ -174,6 +178,36 @@ thresholdSlider.addEventListener('input', () => {
 thresholdSlider.addEventListener('change', () => {
   if (bibInput.value.trim().length > 0) {
     runConversion();
+  }
+});
+
+// Database source change handler
+dbSourceSelect.addEventListener('change', async () => {
+  const source = dbSourceSelect.value as 'wos' | 'iso';
+  const url = source === 'iso' ? './iso-abbreviations.json' : './wos-abbreviations.json';
+  
+  dbStatus.textContent = 'Loading database...';
+  dbStatus.className = 'db-badge loading';
+  databaseLoaded = false;
+  checkConvertState();
+  
+  try {
+    setDatabaseSource(source);
+    if (!isDatabaseLoaded(source)) {
+      await loadDatabase(source, url);
+    }
+    databaseLoaded = true;
+    dbStatus.textContent = 'Database Ready';
+    dbStatus.className = 'db-badge ready';
+    checkConvertState();
+    
+    if (bibInput.value.trim().length > 0) {
+      runConversion();
+    }
+  } catch (error) {
+    console.error('Failed to load journal abbreviation database:', error);
+    dbStatus.textContent = 'Error loading database';
+    dbStatus.className = 'db-badge loading';
   }
 });
 
