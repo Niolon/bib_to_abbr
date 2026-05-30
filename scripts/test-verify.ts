@@ -96,14 +96,46 @@ async function test() {
   setDatabaseSource('iso');
   const isoMatch = findAbbreviation('Journal of Applied Crystallography', 'normal');
   console.log(`ISO Match: "Journal of Applied Crystallography" -> "${isoMatch.abbreviation}"`);
-  if (isoMatch.abbreviation !== 'J APPL CRYSTALLOGR') {
-    throw new Error(`Expected J APPL CRYSTALLOGR, got "${isoMatch.abbreviation}"`);
+  if (isoMatch.abbreviation !== 'J Appl Crystallogr') {
+    throw new Error(`Expected J Appl Crystallogr, got "${isoMatch.abbreviation}"`);
   }
 
   const formattedIsoMatch = formatAbbreviation(isoMatch.abbreviation, 'iso');
   console.log(`Formatted ISO Match: -> "${formattedIsoMatch}"`);
   if (formattedIsoMatch !== 'J. Appl. Cryst.') {
     throw new Error(`Expected J. Appl. Cryst., got "${formattedIsoMatch}"`);
+  }
+
+  // CrystEngComm casing assertion
+  console.log("\nTesting CrystEngComm casing preservation...");
+  const formattedCrystEngCommWoS = formatAbbreviation('CRYSTENGCOMM', 'iso');
+  console.log(`Formatted 'CRYSTENGCOMM' (WoS) -> "${formattedCrystEngCommWoS}"`);
+  if (formattedCrystEngCommWoS !== 'CrystEngComm') {
+    throw new Error(`Expected CrystEngComm, got "${formattedCrystEngCommWoS}"`);
+  }
+
+  const formattedCrystEngCommISO = formatAbbreviation('CrystEngComm', 'iso');
+  console.log(`Formatted 'CrystEngComm' (ISO) -> "${formattedCrystEngCommISO}"`);
+  if (formattedCrystEngCommISO !== 'CrystEngComm') {
+    throw new Error(`Expected CrystEngComm, got "${formattedCrystEngCommISO}"`);
+  }
+
+  // Combined fallback source test
+  console.log("\nTesting combined ISO + WoS fallback source...");
+  setDatabaseSource('iso-wos');
+
+  // Should find in ISO first
+  const match1 = findAbbreviation('Journal of Applied Crystallography', 'normal');
+  console.log(`Match 1 (ISO): "Journal of Applied Crystallography" -> "${match1.abbreviation}"`);
+  if (match1.abbreviation !== 'J Appl Crystallogr') {
+    throw new Error(`Expected J Appl Crystallogr, got "${match1.abbreviation}"`);
+  }
+
+  // Should fall back to WoS for conference
+  const match2 = findAbbreviation('AASRI Conference on Power and Energy Systems', 'normal');
+  console.log(`Match 2 (WoS Fallback): "AASRI Conference on Power and Energy Systems" -> "${match2.abbreviation}"`);
+  if (match2.abbreviation !== 'AASRI PROC') {
+    throw new Error(`Expected AASRI PROC, got "${match2.abbreviation}"`);
   }
 
   console.log("\nVerification SUCCESS: All tests passed!");

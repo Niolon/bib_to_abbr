@@ -54,10 +54,15 @@ async function init() {
     dbStatus.textContent = 'Loading database...';
     dbStatus.className = 'db-badge loading';
     
-    const source = dbSourceSelect.value as 'wos' | 'iso';
-    const url = source === 'iso' ? './iso-abbreviations.json' : './wos-abbreviations.json';
+    const source = dbSourceSelect.value as 'wos' | 'iso' | 'iso-wos';
     setDatabaseSource(source);
-    await loadDatabase(source, url);
+    if (source === 'iso-wos') {
+      await loadDatabase('iso', './iso-abbreviations.json');
+      await loadDatabase('wos', './wos-abbreviations.json');
+    } else {
+      const url = source === 'iso' ? './iso-abbreviations.json' : './wos-abbreviations.json';
+      await loadDatabase(source, url);
+    }
     
     databaseLoaded = true;
     dbStatus.textContent = 'Database Ready';
@@ -183,8 +188,7 @@ thresholdSlider.addEventListener('change', () => {
 
 // Database source change handler
 dbSourceSelect.addEventListener('change', async () => {
-  const source = dbSourceSelect.value as 'wos' | 'iso';
-  const url = source === 'iso' ? './iso-abbreviations.json' : './wos-abbreviations.json';
+  const source = dbSourceSelect.value as 'wos' | 'iso' | 'iso-wos';
   
   dbStatus.textContent = 'Loading database...';
   dbStatus.className = 'db-badge loading';
@@ -193,8 +197,18 @@ dbSourceSelect.addEventListener('change', async () => {
   
   try {
     setDatabaseSource(source);
-    if (!isDatabaseLoaded(source)) {
-      await loadDatabase(source, url);
+    if (source === 'iso-wos') {
+      if (!isDatabaseLoaded('iso')) {
+        await loadDatabase('iso', './iso-abbreviations.json');
+      }
+      if (!isDatabaseLoaded('wos')) {
+        await loadDatabase('wos', './wos-abbreviations.json');
+      }
+    } else {
+      const url = source === 'iso' ? './iso-abbreviations.json' : './wos-abbreviations.json';
+      if (!isDatabaseLoaded(source)) {
+        await loadDatabase(source, url);
+      }
     }
     databaseLoaded = true;
     dbStatus.textContent = 'Database Ready';

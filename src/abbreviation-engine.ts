@@ -22,17 +22,20 @@ const databases: Record<'wos' | 'iso', DatabaseState> = {
   iso: { originalDb: {}, normalizedDb: new Map(), isLoaded: false }
 };
 
-let currentDbSource: 'wos' | 'iso' = 'wos';
+let currentDbSource: 'wos' | 'iso' | 'iso-wos' = 'wos';
 
-export function getDatabaseSource(): 'wos' | 'iso' {
+export function getDatabaseSource(): 'wos' | 'iso' | 'iso-wos' {
   return currentDbSource;
 }
 
-export function setDatabaseSource(source: 'wos' | 'iso') {
+export function setDatabaseSource(source: 'wos' | 'iso' | 'iso-wos') {
   currentDbSource = source;
 }
 
-export function isDatabaseLoaded(source: 'wos' | 'iso'): boolean {
+export function isDatabaseLoaded(source: 'wos' | 'iso' | 'iso-wos'): boolean {
+  if (source === 'iso-wos') {
+    return databases['iso'].isLoaded && databases['wos'].isLoaded;
+  }
   return databases[source].isLoaded;
 }
 
@@ -85,9 +88,8 @@ export async function loadDatabase(source: 'wos' | 'iso', url: string): Promise<
   for (const [key, value] of Object.entries(rawData)) {
     const normKey = normalizeString(key);
     if (normKey) {
-      // Normalize abbreviation to upper-case, dotless, clean format
+      // Normalize abbreviation to clean dotless format, preserving original casing
       const cleanAbbr = value
-        .toUpperCase()
         .replace(/[.,:]/g, '')
         .replace(/\s+/g, ' ')
         .trim();
@@ -102,22 +104,28 @@ export async function loadDatabase(source: 'wos' | 'iso', url: string): Promise<
   dbState.isLoaded = true;
 }
 
+const caseOverrides: Record<string, string> = {
+  'CRYSTENGCOMM': 'CrystEngComm',
+  'CHEMPHYSCHEM': 'ChemPhysChem',
+  'CHEMBIOCHEM': 'ChemBioChem'
+};
+
 /**
- * Formats a WoS abbreviation string according to the requested style:
+ * Formats an abbreviation string according to the requested style:
  * - 'wos': Keep uppercase, dotless (e.g. "J APPL CRYSTALLOGR")
  * - 'iso': Title Case, dots added to abbreviated words (e.g. "J. Appl. Crystallogr.")
  * - 'title-dotless': Title Case, dotless (e.g. "J Appl Crystallogr")
  */
 export function formatAbbreviation(abbr: string, style: 'wos' | 'iso' | 'title-dotless'): string {
-  if (style === 'wos') return abbr;
+  if (style === 'wos') return abbr.toUpperCase();
 
   // Pre-process WoS annotations and specific crystallographic unifications
   const cleaned = abbr
     .replace(/\+/g, '') // Omit translation indicator "+"
-    .replace(/\bCRYSTALLOGR\b/g, 'CRYST')
-    .replace(/\bCRYSTALL\b/g, 'CRYST')
-    .replace(/\bA-CRYS\b/g, 'A')
-    .replace(/\bB-STRU\b/g, 'B');
+    .replace(/\bCRYSTALLOGR\b/gi, 'CRYST')
+    .replace(/\bCRYSTALL\b/gi, 'CRYST')
+    .replace(/\bA-CRYS\b/gi, 'A')
+    .replace(/\bB-STRU\b/gi, 'B');
 
   const parts = cleaned.split(/(\s+)/);
   const formattedParts = parts.map(part => {
@@ -127,16 +135,27 @@ export function formatAbbreviation(abbr: string, style: 'wos' | 'iso' | 'title-d
     const formattedSubparts = subparts.map(sub => {
       if (!sub) return '';
 
-      let titleCase = sub.charAt(0).toUpperCase() + sub.slice(1).toLowerCase();
+      const upperSub = sub.toUpperCase();
+      const hasLowercase = /[a-z]/.test(sub);
+
+      let titleCase: string;
+      if (caseOverrides[upperSub]) {
+        titleCase = caseOverrides[upperSub];
+      } else if (hasLowercase) {
+        titleCase = sub;
+      } else {
+        titleCase = sub.charAt(0).toUpperCase() + sub.slice(1).toLowerCase();
+      }
 
       if (style === 'iso') {
         const noDot = [
           'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
           'ACTA', 'REVIEW', 'REVIEWS', 'LETTERS', 'REPORTS', 'PROGRESS', 'COMMUNICATIONS',
           'CHRONICLE', 'BULLETIN', 'PROCEEDINGS', 'TRANSACTIONS', 'SECTION', 'SERIES', 'PART', 'VOLUME',
-          'AND', 'OF', 'THE', 'FOR', 'IN', 'ON', 'ET', 'DE', 'LA', 'UND', 'DER', 'TO'
+          'AND', 'OF', 'THE', 'FOR', 'IN', 'ON', 'ET', 'DE', 'LA', 'UND', 'DER', 'TO',
+          'CRYSTENGCOMM'
         ];
-        if (!noDot.includes(sub.toUpperCase())) {
+        if (!noDot.includes(upperSub)) {
           titleCase += '.';
         }
       }
@@ -158,6 +177,23 @@ export function findAbbreviationCandidates(
   strictness: 'strict' | 'normal' | 'fuzzy',
   threshold: number = 0.75
 ): MatchResult[] {
+  if (currentDbSource === 'iso-wos') {
+    // 1. Search ISO database first
+    currentDbSource = 'iso';
+    const isoResults = findAbbreviationCandidates(journal, strictness, threshold);
+    currentDbSource = 'iso-wos'; // Restore
+    
+    if (isoResults.length > 0 && isoResults[0].matchType !== 'none') {
+      return isoResults;
+    }
+    
+    // 2. Fallback to WoS database
+    currentDbSource = 'wos';
+    const wosResults = findAbbreviationCandidates(journal, strictness, threshold);
+    currentDbSource = 'iso-wos'; // Restore
+    return wosResults;
+  }
+
   const upperJournal = journal.toUpperCase().trim();
   const results: MatchResult[] = [];
   const activeDb = databases[currentDbSource];
