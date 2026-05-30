@@ -73,22 +73,30 @@ async function test() {
   console.log(updatedBib);
 
   // Format test assertions
-  const formattedIso1 = formatAbbreviation('ACTA CRYSTALL A-CRYS', 'iso');
+  const formattedIso1 = formatAbbreviation('ACTA CRYSTALL A-CRYS', 'iso', 'Acta Crystallographica Section A-Crystal Physics Diffraction Theoretical and General Crystallography');
   console.log(`Formatted ISO: "ACTA CRYSTALL A-CRYS" -> "${formattedIso1}"`);
   if (formattedIso1 !== 'Acta Cryst. A.') {
     throw new Error(`Failed formatting ACTA CRYSTALL A-CRYS, got "${formattedIso1}"`);
   }
 
-  const formattedIso2 = formatAbbreviation('J APPL CRYSTALLOGR', 'iso');
+  const formattedIso2 = formatAbbreviation('J APPL CRYSTALLOGR', 'iso', 'Journal of Applied Crystallography');
   console.log(`Formatted ISO: "J APPL CRYSTALLOGR" -> "${formattedIso2}"`);
   if (formattedIso2 !== 'J. Appl. Cryst.') {
     throw new Error(`Failed formatting J APPL CRYSTALLOGR, got "${formattedIso2}"`);
   }
 
-  const formattedTitleDotless = formatAbbreviation('J APPL CRYSTALLOGR', 'title-dotless');
+  const formattedTitleDotless = formatAbbreviation('J APPL CRYSTALLOGR', 'title-dotless', 'Journal of Applied Crystallography');
   console.log(`Formatted Title-Dotless: "J APPL CRYSTALLOGR" -> "${formattedTitleDotless}"`);
   if (formattedTitleDotless !== 'J Appl Cryst') {
     throw new Error(`Failed formatting J APPL CRYSTALLOGR in title-dotless, got "${formattedTitleDotless}"`);
+  }
+
+  // Word completeness / non-shortened words test
+  console.log("\nTesting complete words dot-omission...");
+  const formattedScience = formatAbbreviation('Science', 'iso', 'Science');
+  console.log(`Formatted 'Science' -> "${formattedScience}"`);
+  if (formattedScience !== 'Science') {
+    throw new Error(`Expected Science, got "${formattedScience}"`);
   }
 
   // ISO Database source assertions
@@ -100,7 +108,7 @@ async function test() {
     throw new Error(`Expected J Appl Crystallogr, got "${isoMatch.abbreviation}"`);
   }
 
-  const formattedIsoMatch = formatAbbreviation(isoMatch.abbreviation, 'iso');
+  const formattedIsoMatch = formatAbbreviation(isoMatch.abbreviation, 'iso', 'Journal of Applied Crystallography');
   console.log(`Formatted ISO Match: -> "${formattedIsoMatch}"`);
   if (formattedIsoMatch !== 'J. Appl. Cryst.') {
     throw new Error(`Expected J. Appl. Cryst., got "${formattedIsoMatch}"`);

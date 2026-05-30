@@ -284,7 +284,7 @@ function runConversion() {
         formattedCandidates.push(cand);
         continue;
       }
-      const formattedAbbr = formatAbbreviation(cand.abbreviation, styleVal);
+      const formattedAbbr = formatAbbreviation(cand.abbreviation, styleVal, match.value);
       if (!seen.has(formattedAbbr)) {
         seen.add(formattedAbbr);
         formattedCandidates.push({

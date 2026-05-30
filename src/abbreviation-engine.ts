@@ -116,7 +116,11 @@ const caseOverrides: Record<string, string> = {
  * - 'iso': Title Case, dots added to abbreviated words (e.g. "J. Appl. Crystallogr.")
  * - 'title-dotless': Title Case, dotless (e.g. "J Appl Crystallogr")
  */
-export function formatAbbreviation(abbr: string, style: 'wos' | 'iso' | 'title-dotless'): string {
+export function formatAbbreviation(
+  abbr: string,
+  style: 'wos' | 'iso' | 'title-dotless',
+  originalJournal?: string
+): string {
   if (style === 'wos') return abbr.toUpperCase();
 
   // Pre-process WoS annotations and specific crystallographic unifications
@@ -126,6 +130,15 @@ export function formatAbbreviation(abbr: string, style: 'wos' | 'iso' | 'title-d
     .replace(/\bCRYSTALL\b/gi, 'CRYST')
     .replace(/\bA-CRYS\b/gi, 'A')
     .replace(/\bB-STRU\b/gi, 'B');
+
+  // Tokenize original words for alignment, ignoring punctuation
+  let originalWords: string[] = [];
+  if (originalJournal) {
+    originalWords = originalJournal
+      .split(/[^a-zA-Z0-9]+/)
+      .filter(w => w.length > 0);
+  }
+  let origWordIndex = 0;
 
   const parts = cleaned.split(/(\s+)/);
   const formattedParts = parts.map(part => {
@@ -147,6 +160,22 @@ export function formatAbbreviation(abbr: string, style: 'wos' | 'iso' | 'title-d
         titleCase = sub.charAt(0).toUpperCase() + sub.slice(1).toLowerCase();
       }
 
+      // Check if this word was shortened (abbreviated) compared to the original
+      let isCompleteWord = false;
+      if (originalWords.length > 0) {
+        const cleanSub = sub.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+        for (let i = origWordIndex; i < originalWords.length; i++) {
+          const cleanOrig = originalWords[i].replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+          if (cleanOrig.startsWith(cleanSub)) {
+            origWordIndex = i + 1; // Advance alignment pointer
+            if (cleanOrig === cleanSub) {
+              isCompleteWord = true;
+            }
+            break;
+          }
+        }
+      }
+
       if (style === 'iso') {
         const noDot = [
           'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
@@ -155,8 +184,14 @@ export function formatAbbreviation(abbr: string, style: 'wos' | 'iso' | 'title-d
           'AND', 'OF', 'THE', 'FOR', 'IN', 'ON', 'ET', 'DE', 'LA', 'UND', 'DER', 'TO',
           'CRYSTENGCOMM'
         ];
+        
+        // Single uppercase letters (like A, B section names) still get dotted
+        const isSectionLetter = /^[A-Z]$/i.test(sub);
+
         if (!noDot.includes(upperSub)) {
-          titleCase += '.';
+          if (!isCompleteWord || isSectionLetter) {
+            titleCase += '.';
+          }
         }
       }
       return titleCase;
