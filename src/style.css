@@ -58,7 +58,7 @@ header {
 }
 
 .header-container {
-  max-width: 1400px;
+  max-width: 1336px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -583,4 +583,298 @@ footer a:hover {
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
+}
+
+/* Custom Rules & Unification Panel Styles */
+.rules-panel {
+  border-color: rgba(255, 255, 255, 0.08);
+  margin-bottom: 0.5rem;
+}
+
+.rules-panel:hover {
+  border-color: rgba(14, 165, 233, 0.2);
+}
+
+.rules-panel-header:hover h2 {
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.rules-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.rules-tabs .tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 6px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.rules-tabs .tab-btn:hover:not(.active) {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.rules-tabs .tab-btn.active {
+  background: rgba(14, 165, 233, 0.12);
+  color: var(--text-primary);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  font-weight: 600;
+}
+
+.tab-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  background: var(--warning);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--warning);
+  animation: pulse 1.5s infinite;
+}
+
+.rules-split {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .rules-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rules-list {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rule-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.rule-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.rule-item-text {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+.rule-item-text strong {
+  color: var(--text-primary);
+}
+
+.rule-item-text code {
+  background: rgba(14, 165, 233, 0.1);
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+}
+
+.rule-item-arrow {
+  color: var(--text-muted);
+}
+
+.rule-item-delete {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.rule-item-delete:hover {
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Inconsistencies & Issue Cards */
+.issue-card {
+  background: rgba(20, 28, 48, 0.4);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.issue-card:hover {
+  transform: translateY(-1px);
+  background: rgba(20, 28, 48, 0.6);
+}
+
+.issue-card.issue-missing {
+  border-left: 4px solid var(--warning);
+}
+
+.issue-card.issue-inconsistent_output {
+  border-left: 4px solid var(--danger);
+}
+
+.issue-card.issue-mixed_input {
+  border-left: 4px solid var(--info);
+}
+
+.issue-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.issue-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+}
+
+.badge-missing {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-inconsistent_output {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-mixed_input {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--info);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.issue-journal-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.issue-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.issue-message {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.issue-action-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.issue-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  outline: none;
+}
+
+.issue-input:focus, .issue-select:focus,
+#customJournalInput:focus, #customAbbrInput:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+}
+
+.issue-select {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.btn-sm {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+}
+
+/* Custom rule additions to diff highlighting */
+.diff-line.custom-added {
+  background: rgba(139, 92, 246, 0.15);
+  color: rgba(216, 180, 254, 0.9);
+  border-left: 3px solid var(--accent-purple);
+}
+
+/* Already-abbreviated diff highlighting */
+.diff-line.abbreviated-added {
+  background: rgba(6, 182, 212, 0.1);
+  color: rgba(103, 232, 249, 0.9);
+  border-left: 3px solid var(--accent-cyan);
+}
+
+/* Already-abbreviated inconsistency badge */
+.badge-already_abbreviated {
+  background: rgba(6, 182, 212, 0.12);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.issue-already_abbreviated {
+  border-left-color: var(--accent-cyan);
 }

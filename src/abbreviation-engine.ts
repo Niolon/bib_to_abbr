@@ -1,6 +1,6 @@
 export interface MatchResult {
   abbreviation: string;
-  matchType: 'exact' | 'normal' | 'fuzzy' | 'none';
+  matchType: 'exact' | 'normal' | 'fuzzy' | 'none' | 'custom' | 'abbreviated';
   originalKey?: string;
   confidence?: number;
 }
@@ -14,12 +14,13 @@ interface DbEntry {
 interface DatabaseState {
   originalDb: Record<string, string>;
   normalizedDb: Map<string, DbEntry>;
+  abbreviationDb: Map<string, DbEntry>;
   isLoaded: boolean;
 }
 
 const databases: Record<'ncbi' | 'iso', DatabaseState> = {
-  ncbi: { originalDb: {}, normalizedDb: new Map(), isLoaded: false },
-  iso: { originalDb: {}, normalizedDb: new Map(), isLoaded: false }
+  ncbi: { originalDb: {}, normalizedDb: new Map(), abbreviationDb: new Map(), isLoaded: false },
+  iso: { originalDb: {}, normalizedDb: new Map(), abbreviationDb: new Map(), isLoaded: false }
 };
 
 let currentDbSource: 'ncbi' | 'iso' | 'iso-ncbi' = 'ncbi';
@@ -30,6 +31,31 @@ export function getDatabaseSource(): 'ncbi' | 'iso' | 'iso-ncbi' {
 
 export function setDatabaseSource(source: 'ncbi' | 'iso' | 'iso-ncbi') {
   currentDbSource = source;
+}
+
+const customRules = new Map<string, { originalKey: string; abbreviation: string }>();
+
+export function addCustomRule(journal: string, abbreviation: string): void {
+  const normKey = normalizeString(journal);
+  if (normKey) {
+    customRules.set(normKey, {
+      originalKey: journal.trim(),
+      abbreviation: abbreviation.trim()
+    });
+  }
+}
+
+export function deleteCustomRule(journal: string): void {
+  const normKey = normalizeString(journal);
+  customRules.delete(normKey);
+}
+
+export function getCustomRules(): { originalKey: string; abbreviation: string }[] {
+  return Array.from(customRules.values());
+}
+
+export function clearCustomRules(): void {
+  customRules.clear();
 }
 
 export function isDatabaseLoaded(source: 'ncbi' | 'iso' | 'iso-ncbi'): boolean {
@@ -108,6 +134,13 @@ export async function loadDatabase(source: 'ncbi' | 'iso', url: string): Promise
         originalKey: key,
         abbreviation: cleanAbbr
       });
+      const normAbbr = normalizeString(cleanAbbr);
+      if (normAbbr) {
+        dbState.abbreviationDb.set(normAbbr, {
+          originalKey: key,
+          abbreviation: cleanAbbr
+        });
+      }
     }
   }
   dbState.isLoaded = true;
@@ -218,6 +251,17 @@ export function findAbbreviationCandidates(
   strictness: 'strict' | 'normal' | 'fuzzy',
   threshold: number = 0.75
 ): MatchResult[] {
+  const normJournal = normalizeString(journal);
+  if (customRules.has(normJournal)) {
+    const custom = customRules.get(normJournal)!;
+    return [{
+      abbreviation: custom.abbreviation,
+      matchType: 'custom',
+      originalKey: custom.originalKey,
+      confidence: 1.0
+    }];
+  }
+
   if (currentDbSource === 'iso-ncbi') {
     // 1. Search ISO database first
     currentDbSource = 'iso';
@@ -249,7 +293,16 @@ export function findAbbreviationCandidates(
     });
   }
 
-  const normJournal = normalizeString(journal);
+  // 1.5. Check if it matches an abbreviation directly (already abbreviated)
+  const abbrEntry = activeDb.abbreviationDb.get(normJournal);
+  if (abbrEntry && !results.some(r => r.abbreviation === abbrEntry.abbreviation)) {
+    results.push({
+      abbreviation: abbrEntry.abbreviation,
+      matchType: 'abbreviated',
+      originalKey: abbrEntry.originalKey,
+      confidence: 1.0
+    });
+  }
 
   // Fallback check
   if (strictness === 'strict') {
