@@ -75,7 +75,7 @@ async function test() {
   // Format test assertions
   const formattedIso1 = formatAbbreviation('ACTA CRYSTALL A-CRYS', 'iso', 'Acta Crystallographica Section A-Crystal Physics Diffraction Theoretical and General Crystallography');
   console.log(`Formatted ISO: "ACTA CRYSTALL A-CRYS" -> "${formattedIso1}"`);
-  if (formattedIso1 !== 'Acta Cryst. A.') {
+  if (formattedIso1 !== 'Acta Cryst. A') {
     throw new Error(`Failed formatting ACTA CRYSTALL A-CRYS, got "${formattedIso1}"`);
   }
 

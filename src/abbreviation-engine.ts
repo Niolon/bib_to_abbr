@@ -185,11 +185,8 @@ export function formatAbbreviation(
           'CRYSTENGCOMM'
         ];
         
-        // Single uppercase letters (like A, B section names) still get dotted
-        const isSectionLetter = /^[A-Z]$/i.test(sub);
-
         if (!noDot.includes(upperSub)) {
-          if (!isCompleteWord || isSectionLetter) {
+          if (!isCompleteWord) {
             titleCase += '.';
           }
         }
