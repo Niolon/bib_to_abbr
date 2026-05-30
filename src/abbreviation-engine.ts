@@ -17,24 +17,24 @@ interface DatabaseState {
   isLoaded: boolean;
 }
 
-const databases: Record<'wos' | 'iso', DatabaseState> = {
-  wos: { originalDb: {}, normalizedDb: new Map(), isLoaded: false },
+const databases: Record<'ncbi' | 'iso', DatabaseState> = {
+  ncbi: { originalDb: {}, normalizedDb: new Map(), isLoaded: false },
   iso: { originalDb: {}, normalizedDb: new Map(), isLoaded: false }
 };
 
-let currentDbSource: 'wos' | 'iso' | 'iso-wos' = 'wos';
+let currentDbSource: 'ncbi' | 'iso' | 'iso-ncbi' = 'ncbi';
 
-export function getDatabaseSource(): 'wos' | 'iso' | 'iso-wos' {
+export function getDatabaseSource(): 'ncbi' | 'iso' | 'iso-ncbi' {
   return currentDbSource;
 }
 
-export function setDatabaseSource(source: 'wos' | 'iso' | 'iso-wos') {
+export function setDatabaseSource(source: 'ncbi' | 'iso' | 'iso-ncbi') {
   currentDbSource = source;
 }
 
-export function isDatabaseLoaded(source: 'wos' | 'iso' | 'iso-wos'): boolean {
-  if (source === 'iso-wos') {
-    return databases['iso'].isLoaded && databases['wos'].isLoaded;
+export function isDatabaseLoaded(source: 'ncbi' | 'iso' | 'iso-ncbi'): boolean {
+  if (source === 'iso-ncbi') {
+    return databases['iso'].isLoaded && databases['ncbi'].isLoaded;
   }
   return databases[source].isLoaded;
 }
@@ -79,13 +79,22 @@ function diceCoefficient(setA: Set<string>, setB: Set<string>): number {
 /**
  * Loads a journal abbreviations database from public JSON asset.
  */
-export async function loadDatabase(source: 'wos' | 'iso', url: string): Promise<void> {
+export async function loadDatabase(source: 'ncbi' | 'iso', url: string): Promise<void> {
   const dbState = databases[source];
   if (dbState.isLoaded) return;
   const response = await fetch(url);
-  const rawData: Record<string, string> = await response.json();
+  const rawData: any = await response.json();
 
-  for (const [key, value] of Object.entries(rawData)) {
+  let mappings: Record<string, string> = {};
+  if (rawData && typeof rawData === 'object') {
+    if ('default' in rawData && rawData.default && typeof rawData.default === 'object' && 'container-title' in rawData.default) {
+      mappings = rawData.default['container-title'];
+    } else {
+      mappings = rawData as Record<string, string>;
+    }
+  }
+
+  for (const [key, value] of Object.entries(mappings)) {
     const normKey = normalizeString(key);
     if (normKey) {
       // Normalize abbreviation to clean dotless format, preserving original casing
@@ -209,21 +218,21 @@ export function findAbbreviationCandidates(
   strictness: 'strict' | 'normal' | 'fuzzy',
   threshold: number = 0.75
 ): MatchResult[] {
-  if (currentDbSource === 'iso-wos') {
+  if (currentDbSource === 'iso-ncbi') {
     // 1. Search ISO database first
     currentDbSource = 'iso';
     const isoResults = findAbbreviationCandidates(journal, strictness, threshold);
-    currentDbSource = 'iso-wos'; // Restore
+    currentDbSource = 'iso-ncbi'; // Restore
     
     if (isoResults.length > 0 && isoResults[0].matchType !== 'none') {
       return isoResults;
     }
     
-    // 2. Fallback to WoS database
-    currentDbSource = 'wos';
-    const wosResults = findAbbreviationCandidates(journal, strictness, threshold);
-    currentDbSource = 'iso-wos'; // Restore
-    return wosResults;
+    // 2. Fallback to NCBI database
+    currentDbSource = 'ncbi';
+    const ncbiResults = findAbbreviationCandidates(journal, strictness, threshold);
+    currentDbSource = 'iso-ncbi'; // Restore
+    return ncbiResults;
   }
 
   const upperJournal = journal.toUpperCase().trim();

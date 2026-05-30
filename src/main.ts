@@ -54,13 +54,13 @@ async function init() {
     dbStatus.textContent = 'Loading database...';
     dbStatus.className = 'db-badge loading';
     
-    const source = dbSourceSelect.value as 'wos' | 'iso' | 'iso-wos';
+    const source = dbSourceSelect.value as 'ncbi' | 'iso' | 'iso-ncbi';
     setDatabaseSource(source);
-    if (source === 'iso-wos') {
+    if (source === 'iso-ncbi') {
       await loadDatabase('iso', './iso-abbreviations.json');
-      await loadDatabase('wos', './wos-abbreviations.json');
+      await loadDatabase('ncbi', './ncbi-abbreviations.json');
     } else {
-      const url = source === 'iso' ? './iso-abbreviations.json' : './wos-abbreviations.json';
+      const url = source === 'iso' ? './iso-abbreviations.json' : './ncbi-abbreviations.json';
       await loadDatabase(source, url);
     }
     
@@ -188,7 +188,7 @@ thresholdSlider.addEventListener('change', () => {
 
 // Database source change handler
 dbSourceSelect.addEventListener('change', async () => {
-  const source = dbSourceSelect.value as 'wos' | 'iso' | 'iso-wos';
+  const source = dbSourceSelect.value as 'ncbi' | 'iso' | 'iso-ncbi';
   
   dbStatus.textContent = 'Loading database...';
   dbStatus.className = 'db-badge loading';
@@ -197,15 +197,15 @@ dbSourceSelect.addEventListener('change', async () => {
   
   try {
     setDatabaseSource(source);
-    if (source === 'iso-wos') {
+    if (source === 'iso-ncbi') {
       if (!isDatabaseLoaded('iso')) {
         await loadDatabase('iso', './iso-abbreviations.json');
       }
-      if (!isDatabaseLoaded('wos')) {
-        await loadDatabase('wos', './wos-abbreviations.json');
+      if (!isDatabaseLoaded('ncbi')) {
+        await loadDatabase('ncbi', './ncbi-abbreviations.json');
       }
     } else {
-      const url = source === 'iso' ? './iso-abbreviations.json' : './wos-abbreviations.json';
+      const url = source === 'iso' ? './iso-abbreviations.json' : './ncbi-abbreviations.json';
       if (!isDatabaseLoaded(source)) {
         await loadDatabase(source, url);
       }
@@ -294,7 +294,7 @@ function runConversion() {
       }
     }
 
-    if (formattedCandidates.length > 0 && formattedCandidates[0].matchType !== 'none') {
+    if (formattedCandidates.length > 0) {
       activeMatches.push({
         match,
         candidates: formattedCandidates,
@@ -314,13 +314,18 @@ function runConversion() {
 function updateConversionOutput() {
   const content = bibInput.value;
   
-  const replacements = activeMatches.map(item => {
-    const chosen = item.candidates[item.selectedIndex];
-    return {
-      match: item.match,
-      newValue: chosen.abbreviation
-    };
-  });
+  const replacements = activeMatches
+    .filter(item => {
+      const chosen = item.candidates[item.selectedIndex];
+      return chosen.abbreviation !== item.match.value;
+    })
+    .map(item => {
+      const chosen = item.candidates[item.selectedIndex];
+      return {
+        match: item.match,
+        newValue: chosen.abbreviation
+      };
+    });
 
   convertedContent = applyReplacements(content, replacements);
 
@@ -330,10 +335,12 @@ function updateConversionOutput() {
 
   activeMatches.forEach(item => {
     const chosen = item.candidates[item.selectedIndex];
-    if (chosen.matchType === 'exact' || chosen.matchType === 'normal') {
-      exactNormalCount++;
-    } else if (chosen.matchType === 'fuzzy') {
-      fuzzyCount++;
+    if (chosen.abbreviation !== item.match.value) {
+      if (chosen.matchType === 'exact' || chosen.matchType === 'normal') {
+        exactNormalCount++;
+      } else if (chosen.matchType === 'fuzzy') {
+        fuzzyCount++;
+      }
     }
   });
 
@@ -349,15 +356,16 @@ function updateConversionOutput() {
 function renderDiffView() {
   outputView.innerHTML = '';
   
-  if (activeMatches.length === 0) {
+  if (totalFieldsCount === 0) {
     const noChanges = document.createElement('div');
     noChanges.className = 'diff-placeholder';
     noChanges.innerHTML = `
-      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--success);">
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-        <polyline points="22 4 12 14.01 9 11.01"/>
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="16" x2="12" y2="12"/>
+        <line x1="12" y1="8" x2="12.01" y2="8"/>
       </svg>
-      <p>No changes needed. All journal names match abbreviations perfectly or no matches found.</p>
+      <p>No journal or booktitle fields found in the input.</p>
     `;
     outputView.appendChild(noChanges);
     return;
@@ -375,86 +383,122 @@ function renderDiffView() {
     container.style.padding = '0.35rem';
     container.style.background = 'rgba(255,255,255,0.01)';
     
-    // Removed line (original title)
-    const removedLine = document.createElement('div');
-    removedLine.className = 'diff-line removed';
-    removedLine.textContent = `- ${item.match.name} = ${item.match.quoteChar}${item.match.value}${item.match.quoteChar}`;
-    container.appendChild(removedLine);
-
-    // Added line container (abbreviated selection)
-    const addedLine = document.createElement('div');
+    const closeChar = item.match.quoteChar === '{' ? '}' : (item.match.quoteChar === '"' ? '"' : '');
     const chosen = item.candidates[item.selectedIndex];
-    addedLine.className = `diff-line ${chosen.matchType === 'fuzzy' ? 'fuzzy-added' : 'added'}`;
-    
-    // Prefix
-    const prefix = document.createElement('span');
-    prefix.textContent = `+ ${item.match.name} = ${item.match.quoteChar}`;
-    addedLine.appendChild(prefix);
+    const isChanged = chosen.abbreviation !== item.match.value;
 
-    // Render interactive select if there are multiple abbreviation choices
-    if (item.candidates.length > 1) {
-      const select = document.createElement('select');
-      select.style.background = 'rgba(0, 0, 0, 0.4)';
-      select.style.color = 'inherit';
-      select.style.border = '1px solid rgba(255,255,255,0.2)';
-      select.style.borderRadius = '4px';
-      select.style.padding = '0.05rem 0.25rem';
-      select.style.fontFamily = 'inherit';
-      select.style.fontSize = 'inherit';
-      select.style.cursor = 'pointer';
-      select.style.outline = 'none';
+    if (isChanged) {
+      // Removed line (original title)
+      const removedLine = document.createElement('div');
+      removedLine.className = 'diff-line removed';
+      removedLine.textContent = `- ${item.match.name} = ${item.match.quoteChar}${item.match.value}${closeChar}`;
+      container.appendChild(removedLine);
 
-      item.candidates.forEach((cand, cIdx) => {
-        const option = document.createElement('option');
-        option.value = cIdx.toString();
-        option.selected = cIdx === item.selectedIndex;
-        
-        let label = cand.abbreviation;
-        if (cand.confidence && cand.confidence < 1.0) {
-          label += ` (${Math.round(cand.confidence * 100)}% match)`;
-        } else {
-          label += ` (${cand.matchType})`;
-        }
-        option.textContent = label;
-        select.appendChild(option);
-      });
-
-      select.addEventListener('change', () => {
-        item.selectedIndex = parseInt(select.value);
-        updateConversionOutput();
-        
-        // Re-apply style class for fuzzy or normal coloring
-        const currentChosen = item.candidates[item.selectedIndex];
-        addedLine.className = `diff-line ${currentChosen.matchType === 'fuzzy' ? 'fuzzy-added' : 'added'}`;
-      });
-
-      addedLine.appendChild(select);
-    } else {
-      // Static text if only 1 option
-      const valueSpan = document.createElement('span');
-      valueSpan.style.fontWeight = 'bold';
-      valueSpan.textContent = chosen.abbreviation;
-      addedLine.appendChild(valueSpan);
-
-      const suffix = document.createElement('span');
-      suffix.style.opacity = '0.7';
-      suffix.style.fontSize = '0.75rem';
-      suffix.style.marginLeft = '0.5rem';
+      // Added line container (abbreviated selection)
+      const addedLine = document.createElement('div');
+      addedLine.className = `diff-line ${chosen.matchType === 'fuzzy' ? 'fuzzy-added' : 'added'}`;
       
-      if (chosen.confidence && chosen.confidence < 1.0) {
-        suffix.textContent = `(${Math.round(chosen.confidence * 100)}% Match)`;
+      // Prefix
+      const prefix = document.createElement('span');
+      prefix.textContent = `+ ${item.match.name} = ${item.match.quoteChar}`;
+      addedLine.appendChild(prefix);
+
+      // Render interactive select if there are multiple abbreviation choices
+      if (item.candidates.length > 1) {
+        const select = document.createElement('select');
+        select.style.background = 'rgba(0, 0, 0, 0.4)';
+        select.style.color = 'inherit';
+        select.style.border = '1px solid rgba(255,255,255,0.2)';
+        select.style.borderRadius = '4px';
+        select.style.padding = '0.05rem 0.25rem';
+        select.style.fontFamily = 'inherit';
+        select.style.fontSize = 'inherit';
+        select.style.cursor = 'pointer';
+        select.style.outline = 'none';
+
+        item.candidates.forEach((cand, cIdx) => {
+          const option = document.createElement('option');
+          option.value = cIdx.toString();
+          option.selected = cIdx === item.selectedIndex;
+          
+          let label = cand.abbreviation;
+          if (cand.confidence && cand.confidence < 1.0) {
+            label += ` (${Math.round(cand.confidence * 100)}% match)`;
+          } else {
+            label += ` (${cand.matchType})`;
+          }
+          option.textContent = label;
+          select.appendChild(option);
+        });
+
+        select.addEventListener('change', () => {
+          item.selectedIndex = parseInt(select.value);
+          updateConversionOutput();
+          
+          // Re-apply style class for fuzzy or normal coloring
+          const currentChosen = item.candidates[item.selectedIndex];
+          addedLine.className = `diff-line ${currentChosen.matchType === 'fuzzy' ? 'fuzzy-added' : 'added'}`;
+        });
+
+        addedLine.appendChild(select);
       } else {
-        suffix.textContent = `(${chosen.matchType} match)`;
+        // Static text if only 1 option
+        const valueSpan = document.createElement('span');
+        valueSpan.style.fontWeight = 'bold';
+        valueSpan.textContent = chosen.abbreviation;
+        addedLine.appendChild(valueSpan);
+
+        const suffix = document.createElement('span');
+        suffix.style.opacity = '0.7';
+        suffix.style.fontSize = '0.75rem';
+        suffix.style.marginLeft = '0.5rem';
+        
+        if (chosen.confidence && chosen.confidence < 1.0) {
+          suffix.textContent = `(${Math.round(chosen.confidence * 100)}% Match)`;
+        } else {
+          suffix.textContent = `(${chosen.matchType} match)`;
+        }
+        addedLine.appendChild(suffix);
       }
-      addedLine.appendChild(suffix);
+
+      // Closing quote/brace
+      const closeQuote = document.createElement('span');
+      closeQuote.textContent = closeChar;
+      addedLine.appendChild(closeQuote);
+
+      container.appendChild(addedLine);
+    } else {
+      // Render unchanged line (neutral styling)
+      const unchangedLine = document.createElement('div');
+      unchangedLine.className = 'diff-line unchanged';
+      unchangedLine.style.paddingLeft = '0.5rem';
+      
+      const prefix = document.createElement('span');
+      prefix.textContent = `  ${item.match.name} = ${item.match.quoteChar}`;
+      unchangedLine.appendChild(prefix);
+
+      // Render the value
+      const valueSpan = document.createElement('span');
+      valueSpan.style.fontWeight = '500';
+      valueSpan.textContent = chosen.abbreviation;
+      unchangedLine.appendChild(valueSpan);
+
+      // Closing quote/brace
+      const closeQuote = document.createElement('span');
+      closeQuote.textContent = closeChar;
+      unchangedLine.appendChild(closeQuote);
+
+      // Add status badge
+      const statusBadge = document.createElement('span');
+      statusBadge.style.opacity = '0.5';
+      statusBadge.style.fontSize = '0.75rem';
+      statusBadge.style.marginLeft = '0.8rem';
+      statusBadge.style.fontStyle = 'italic';
+      statusBadge.textContent = chosen.matchType === 'none' ? '(no match found)' : '(already abbreviated)';
+      unchangedLine.appendChild(statusBadge);
+
+      container.appendChild(unchangedLine);
     }
-
-    // Closing quote/brace
-    const closeQuote = document.createElement('span');
-    closeQuote.textContent = item.match.quoteChar;
-    addedLine.appendChild(closeQuote);
-
-    container.appendChild(addedLine);
     diffList.appendChild(container);
   });
 

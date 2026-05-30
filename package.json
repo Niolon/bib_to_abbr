@@ -1,12 +1,13 @@
 {
-  "name": "my-app",
+  "name": "bib-to-abbr",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "scrape": "python3 scripts/scrape_iso.py && python3 scripts/scrape_ncbi.py"
   },
   "devDependencies": {
     "typescript": "~6.0.2",

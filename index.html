@@ -2,10 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BibTeX Journal Abbreviator | Web of Science LTWA Tool</title>
-    <meta name="description" content="A premium, fast, static web tool to automatically replace full journal names in BibTeX (.bib) files with Web of Science (WoS) abbreviations using fuzzy string matching." />
+    <title>BibTeX Journal Abbreviator | NCBI & ISO 4 Tool</title>
+    <meta name="description" content="A premium, fast, static web tool to automatically replace full journal names in BibTeX (.bib) files with NCBI (NLM/PubMed) and ISO 4 abbreviations using fuzzy string matching." />
   </head>
   <body>
     <header>
@@ -19,7 +19,7 @@
             </svg>
             BibTeX Journal Abbreviator
           </h1>
-          <p>Instantly replace bibliography journal names with Web of Science abbreviations</p>
+          <p>Instantly replace bibliography journal names with NCBI or ISO abbreviations</p>
         </div>
         <div id="dbStatus" class="db-badge loading">Loading database...</div>
       </div>
@@ -53,9 +53,9 @@
         <div class="config-group">
           <span class="config-label">Database Source</span>
           <select id="dbSource" style="background: rgba(20, 28, 48, 0.9); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.35rem 0.5rem; border-radius: 6px; outline: none; font-size: 0.85rem; cursor: pointer;">
-            <option value="wos" selected>Web of Science (Clarivate)</option>
+            <option value="ncbi" selected>NCBI (NLM/PubMed)</option>
             <option value="iso">ISO 4 (JabRef/LTWA)</option>
-            <option value="iso-wos">ISO 4 (with WoS fallback)</option>
+            <option value="iso-ncbi">ISO 4 (with NCBI fallback)</option>
           </select>
         </div>
 
@@ -186,7 +186,7 @@
     </main>
 
     <footer>
-      <p>BibTeX Journal Abbreviator &copy; 2026. Made with ❤️ using WoS lists.</p>
+      <p>BibTeX Journal Abbreviator &copy; 2026. Made with ❤️ using NCBI and ISO lists.</p>
     </footer>
 
     <script type="module" src="/src/main.ts"></script>

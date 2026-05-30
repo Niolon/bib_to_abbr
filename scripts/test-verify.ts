@@ -15,7 +15,7 @@ global.fetch = async (url: any) => {
 
 async function test() {
   console.log("Loading databases...");
-  await loadDatabase('wos', './wos-abbreviations.json');
+  await loadDatabase('ncbi', './ncbi-abbreviations.json');
   await loadDatabase('iso', './iso-abbreviations.json');
   console.log("Databases loaded successfully!");
 
@@ -31,10 +31,10 @@ async function test() {
   journal = {Journal of Applied Crystallography},
   year = {2024}
 }
-@inproceedings{proceedings2025,
+@article{union2025,
   author = {Bob, Builder},
-  title = {Conference Title},
-  booktitle = {AASRI Conference on Power and Energy Systems},
+  title = {Union Title},
+  journal = {1199 news. National Union of Hospital and Health Care Employees. District 1199},
   year = {2025}
 }`;
 
@@ -129,8 +129,8 @@ async function test() {
   }
 
   // Combined fallback source test
-  console.log("\nTesting combined ISO + WoS fallback source...");
-  setDatabaseSource('iso-wos');
+  console.log("\nTesting combined ISO + NCBI fallback source...");
+  setDatabaseSource('iso-ncbi');
 
   // Should find in ISO first
   const match1 = findAbbreviation('Journal of Applied Crystallography', 'normal');
@@ -139,11 +139,11 @@ async function test() {
     throw new Error(`Expected J Appl Crystallogr, got "${match1.abbreviation}"`);
   }
 
-  // Should fall back to WoS for conference
-  const match2 = findAbbreviation('AASRI Conference on Power and Energy Systems', 'normal');
-  console.log(`Match 2 (WoS Fallback): "AASRI Conference on Power and Energy Systems" -> "${match2.abbreviation}"`);
-  if (match2.abbreviation !== 'AASRI PROC') {
-    throw new Error(`Expected AASRI PROC, got "${match2.abbreviation}"`);
+  // Should fall back to NCBI for 1199 News
+  const match2 = findAbbreviation('1199 news. National Union of Hospital and Health Care Employees. District 1199', 'normal');
+  console.log(`Match 2 (NCBI Fallback): "1199 news..." -> "${match2.abbreviation}"`);
+  if (match2.abbreviation !== '1199 News') {
+    throw new Error(`Expected 1199 News, got "${match2.abbreviation}"`);
   }
 
   console.log("\nVerification SUCCESS: All tests passed!");

@@ -548,6 +548,12 @@ textarea::placeholder {
   border-left: 3px solid var(--warning);
 }
 
+.diff-line.unchanged {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-secondary);
+  border-left: 3px solid var(--text-muted);
+}
+
 /* Footer */
 footer {
   text-align: center;
