@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BibTeX Journal Abbreviator | Web of Science LTWA Tool</title>
+    <meta name="description" content="A premium, fast, static web tool to automatically replace full journal names in BibTeX (.bib) files with Web of Science (WoS) abbreviations using fuzzy string matching." />
+  </head>
+  <body>
+    <header>
+      <div class="header-container">
+        <div class="brand">
+          <h1>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+              <path d="M6 6h10"/>
+              <path d="M6 10h10"/>
+            </svg>
+            BibTeX Journal Abbreviator
+          </h1>
+          <p>Instantly replace bibliography journal names with Web of Science abbreviations</p>
+        </div>
+        <div id="dbStatus" class="db-badge loading">Loading database...</div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Config Panel -->
+      <section class="panel config-panel">
+        <div class="config-group">
+          <span class="config-label">Match Strictness</span>
+          <div class="radio-group">
+            <input type="radio" id="strictnessStrict" name="strictness" value="strict" class="radio-btn" />
+            <label for="strictnessStrict" class="radio-label">Strict</label>
+            
+            <input type="radio" id="strictnessNormal" name="strictness" value="normal" class="radio-btn" checked />
+            <label for="strictnessNormal" class="radio-label">Normal</label>
+            
+            <input type="radio" id="strictnessFuzzy" name="strictness" value="fuzzy" class="radio-btn" />
+            <label for="strictnessFuzzy" class="radio-label">Fuzzy</label>
+          </div>
+        </div>
+
+        <div class="config-group" id="thresholdContainer" style="display: none;">
+          <span class="config-label">Fuzzy Threshold</span>
+          <div class="slider-container">
+            <input type="range" id="thresholdSlider" min="0.5" max="0.95" step="0.05" value="0.75" />
+            <span id="thresholdValue" class="slider-value">0.75</span>
+          </div>
+        </div>
+
+        <div class="config-group">
+          <span class="config-label">Abbreviation Style</span>
+          <select id="abbrStyle" style="background: rgba(20, 28, 48, 0.9); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.35rem 0.5rem; border-radius: 6px; outline: none; font-size: 0.85rem; cursor: pointer;">
+            <option value="iso" selected>ISO Style (Title Case, dots)</option>
+            <option value="wos">WoS Style (ALL CAPS, dotless)</option>
+            <option value="title-dotless">Title Case (dotless)</option>
+          </select>
+        </div>
+
+        <div class="config-group">
+          <span class="config-label">Target Fields</span>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="targetJournal" checked />
+              journal
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="targetBooktitle" />
+              booktitle (Conferences)
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Main Workspace -->
+      <section class="workspace">
+        <!-- Input Column -->
+        <div class="panel-column">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              Input BibTeX
+            </h2>
+            <div class="btn-group">
+              <button id="uploadBtn" class="btn btn-secondary">Upload File</button>
+              <input type="file" id="fileInput" accept=".bib,.txt" style="display: none;" />
+              <button id="clearBtn" class="btn btn-secondary">Clear</button>
+            </div>
+          </div>
+
+          <div class="panel dropzone" id="dropzone">
+            <div class="dropzone-overlay">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-cyan);">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <p>Drop your .bib file here</p>
+            </div>
+            
+            <div class="textarea-container">
+              <textarea id="bibInput" placeholder="Paste your BibTeX contents here, or drag & drop a .bib file..."></textarea>
+              <div class="upload-cta" id="uploadCta">
+                <div class="upload-icon">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  </svg>
+                </div>
+                <p style="font-size: 1rem; color: var(--text-secondary);">Start by pasting BibTeX code or uploading a file</p>
+                <button id="ctaUploadBtn" class="btn upload-cta-btn">Select File</button>
+              </div>
+            </div>
+          </div>
+          
+          <button id="convertBtn" class="btn btn-primary" style="width: 100%; padding: 0.75rem;" disabled>
+            Convert References
+          </button>
+        </div>
+
+        <!-- Output Column -->
+        <div class="panel-column">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Converted Results
+            </h2>
+            <div class="btn-group">
+              <button id="copyBtn" class="btn btn-secondary" disabled>Copy to Clipboard</button>
+              <button id="downloadBtn" class="btn btn-primary" disabled>Download .bib</button>
+            </div>
+          </div>
+
+          <!-- Stats Bar -->
+          <div class="stats-bar">
+            <div class="stat-card">
+              <div id="statTotal" class="stat-val">-</div>
+              <div class="stat-lbl">Total Entries</div>
+            </div>
+            <div class="stat-card stat-matches">
+              <div id="statMatches" class="stat-val">-</div>
+              <div class="stat-lbl">Matches</div>
+            </div>
+            <div class="stat-card stat-fuzzy">
+              <div id="statFuzzy" class="stat-val">-</div>
+              <div class="stat-lbl">Fuzzy Matches</div>
+            </div>
+            <div class="stat-card stat-unmatched">
+              <div id="statUnmatched" class="stat-val">-</div>
+              <div class="stat-lbl">Unchanged</div>
+            </div>
+          </div>
+
+          <div class="output-container">
+            <div class="output-view" id="outputView">
+              <div class="diff-placeholder" id="diffPlaceholder">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="16" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+                <p>Abbreviation diff and download options will appear here after conversion.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>BibTeX Journal Abbreviator &copy; 2026. Made with ❤️ using WoS lists.</p>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
