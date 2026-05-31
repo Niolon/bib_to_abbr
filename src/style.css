@@ -158,6 +158,11 @@ header {
   display: inline-flex;
   color: var(--accent);
   flex: none;
+  transform: translateY(-0.105em);
+}
+.brand-mark svg {
+  width: 0.78em;
+  height: 0.73m;
 }
 
 .brand p {
@@ -274,11 +279,11 @@ main {
   max-width: 1320px;
   width: 100%;
   margin: 0 auto;
-  padding: 1.6rem 2rem 2.5rem;
+  padding: 1.1rem 2rem 2.5rem;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: 0.75rem;
 }
 
 /* Panels read like leaves of paper on the desk */
@@ -290,12 +295,83 @@ main {
   padding: 1.15rem 1.3rem;
 }
 
-/* ============================== CONFIG STRIP ============================== */
-.config-panel {
+/* ============================== TOOLBAR ============================== */
+.toolbar {
   display: flex;
-  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.toolbar-left {
+  display: flex;
   align-items: center;
-  gap: 1rem 1.9rem;
+  flex-wrap: wrap;
+  gap: 0.45rem 1.1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: none;
+  padding-top: 0.05rem; /* optical alignment with the radio group */
+}
+
+.toolbar-drawer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0.36rem 0.8rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    border-color 0.16s ease;
+  white-space: nowrap;
+}
+.toolbar-drawer-btn:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.toolbar-drawer-btn.active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.toolbar-drawer-btn .badge {
+  margin-left: 0.1rem;
+}
+
+/* Animated drawer — uses grid-template-rows trick for height: auto animation */
+.toolbar-drawer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.26s ease;
+  border-bottom: 0px solid var(--rule);
+}
+.toolbar-drawer.open {
+  grid-template-rows: 1fr;
+  border-bottom-width: 1px;
+}
+.drawer-inner {
+  overflow: hidden;
+  padding: 0 0;
+  transition: padding 0.26s ease;
+}
+.toolbar-drawer.open .drawer-inner {
+  padding: 1.2rem 0 1.3rem;
 }
 
 .config-group {
@@ -314,87 +390,8 @@ main {
   white-space: nowrap;
 }
 
-/* segmented strictness control — printed-tab look */
-.radio-group {
-  display: inline-flex;
-  border: 1px solid var(--rule-strong);
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: var(--well);
-}
-.radio-btn {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-.radio-label {
-  padding: 0.34rem 0.85rem;
-  font-size: 0.82rem;
-  font-weight: 500;
-  cursor: pointer;
-  color: var(--ink-2);
-  border-right: 1px solid var(--rule);
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
-  user-select: none;
-}
-.radio-label:last-of-type {
-  border-right: none;
-}
-.radio-label:hover {
-  color: var(--ink);
-}
-.radio-btn:checked + .radio-label {
-  background: var(--ink);
-  color: var(--paper);
-  font-weight: 600;
-}
-.radio-btn:focus-visible + .radio-label {
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
-}
 
-.slider-container {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-}
-.slider-container input[type='range'] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 116px;
-  height: 2px;
-  background: var(--rule-strong);
-  outline: none;
-  cursor: pointer;
-}
-.slider-container input[type='range']::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background: var(--accent);
-  border: 2px solid var(--surface);
-  box-shadow: 0 0 0 1px var(--accent);
-  cursor: pointer;
-}
-.slider-container input[type='range']::-moz-range-thumb {
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: var(--accent);
-  border: 2px solid var(--surface);
-  cursor: pointer;
-}
-.slider-value {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  min-width: 2.4rem;
-  color: var(--ink);
-}
 
-/* selects */
 .select-wrap {
   position: relative;
   display: inline-flex;
@@ -429,20 +426,6 @@ select:focus-visible {
   box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
-.checkbox-group {
-  display: flex;
-  gap: 0.9rem;
-}
-.checkbox-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--ink-2);
-  cursor: pointer;
-  user-select: none;
-}
 input[type='checkbox'] {
   appearance: none;
   -webkit-appearance: none;
@@ -475,19 +458,7 @@ input[type='checkbox']:focus-visible {
   outline-offset: 2px;
 }
 
-/* ============================== HOUSE STYLE PANEL ============================== */
-.rules-panel {
-  padding: 0;
-  overflow: hidden;
-}
-.rules-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0 0.85rem 0 1.3rem;
-  border-bottom: 1px solid var(--rule);
-}
+/* ============================== HOUSE STYLE (rules/unification) ============================== */
 
 .badge {
   font-family: var(--font-mono);
@@ -524,57 +495,7 @@ input[type='checkbox']:focus-visible {
   background: var(--well);
 }
 
-.rules-panel-content {
-  padding: 1.2rem 1.3rem 1.3rem;
-}
 
-.rules-tabs {
-  display: flex;
-  align-items: center;
-  gap: 0.1rem;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-.tab-btn {
-  position: relative;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--ink-2);
-  padding: 0.85rem 0.7rem;
-  margin-bottom: -1px;
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.tab-btn:hover:not(.active) {
-  color: var(--ink);
-}
-.tab-btn.active {
-  color: var(--ink);
-  border-bottom-color: var(--accent);
-}
-.tab-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-left: 0.35rem;
-  background: var(--ochre);
-  border-radius: 50%;
-  vertical-align: middle;
-}
-.rules-tabs .badge-warning {
-  margin-left: 0.4rem;
-}
-
-.tab-content {
-  display: none;
-}
-.tab-content.active {
-  display: block;
-}
 
 .rules-split {
   display: grid;
@@ -872,7 +793,7 @@ input[type='checkbox']:focus-visible {
 .panel-column {
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 0.75rem;
   min-height: 470px;
 }
 
@@ -1071,21 +992,7 @@ textarea::placeholder {
   color: var(--accent-ink);
 }
 
-.convert-bar {
-  height: 63px;
-  display: flex;
-}
 
-.btn-convert {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.92rem;
-  font-family: var(--font-serif);
-  letter-spacing: 0.02em;
-}
 
 .btn-sm {
   font-size: 0.74rem;

@@ -29,22 +29,17 @@ const fileInput = document.getElementById('fileInput') as HTMLInputElement
 const clearBtn = document.getElementById('clearBtn') as HTMLButtonElement
 const dropzone = document.getElementById('dropzone') as HTMLDivElement
 const uploadCta = document.getElementById('uploadCta') as HTMLDivElement
-const convertBtn = document.getElementById('convertBtn') as HTMLButtonElement
 const copyBtn = document.getElementById('copyBtn') as HTMLButtonElement
 const downloadBtn = document.getElementById('downloadBtn') as HTMLButtonElement
 const outputView = document.getElementById('outputView') as HTMLDivElement
 const diffPlaceholder = document.getElementById('diffPlaceholder') as HTMLDivElement
 
-// Rules Panel UI Elements
-const rulesPanel = document.getElementById('rulesPanel') as HTMLDivElement
-const rulesPanelHeader = document.getElementById('rulesPanelHeader') as HTMLDivElement
-const rulesPanelContent = document.getElementById('rulesPanelContent') as HTMLDivElement
-const toggleRulesBtn = document.getElementById('toggleRulesBtn') as HTMLButtonElement
+// Drawer UI Elements
+const toggleCustomRulesDrawer = document.getElementById('toggleCustomRulesDrawer') as HTMLButtonElement
+const toggleUnificationDrawer = document.getElementById('toggleUnificationDrawer') as HTMLButtonElement
+const drawerCustomRules = document.getElementById('drawerCustomRules') as HTMLDivElement
+const drawerUnification = document.getElementById('drawerUnification') as HTMLDivElement
 const inconsistencyBadge = document.getElementById('inconsistencyBadge') as HTMLSpanElement
-
-// Tab Elements
-const tabCustomRules = document.getElementById('tabCustomRules') as HTMLButtonElement
-const tabUnification = document.getElementById('tabUnification') as HTMLButtonElement
 
 // Custom Rules Elements
 const customJournalInput = document.getElementById('customJournalInput') as HTMLInputElement
@@ -58,12 +53,8 @@ const unifyAllBtn = document.getElementById('unifyAllBtn') as HTMLButtonElement
 const inconsistenciesList = document.getElementById('inconsistenciesList') as HTMLDivElement
 
 // Config Elements
-const strictnessRadios = document.getElementsByName('strictness') as NodeListOf<HTMLInputElement>
-const thresholdContainer = document.getElementById('thresholdContainer') as HTMLDivElement
-const thresholdSlider = document.getElementById('thresholdSlider') as HTMLInputElement
-const thresholdValue = document.getElementById('thresholdValue') as HTMLSpanElement
-const targetJournal = document.getElementById('targetJournal') as HTMLInputElement
-const targetBooktitle = document.getElementById('targetBooktitle') as HTMLInputElement
+const strictnessSelect = document.getElementById('strictnessSelect') as HTMLSelectElement
+const fieldsSelect = document.getElementById('fieldsSelect') as HTMLSelectElement
 const dbSourceSelect = document.getElementById('dbSource') as HTMLSelectElement
 const abbrStyleSelect = document.getElementById('abbrStyle') as HTMLSelectElement
 
@@ -79,6 +70,7 @@ let convertedContent = ''
 let currentFileName = 'references-abbreviated.bib'
 let activeMatches: ActiveMatch[] = []
 let totalFieldsCount = 0
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
 // Cookie helpers
 function setCookie(name: string, value: string, days: number = 365) {
@@ -224,10 +216,9 @@ async function init() {
   }
 }
 
-// Enable/Disable convert button based on state
+// Enable/Disable copy/download; toggle upload CTA
 function checkConvertState() {
   const hasInput = bibInput.value.trim().length > 0
-  convertBtn.disabled = !databaseLoaded || !hasInput
 
   if (hasInput) {
     uploadCta.classList.add('hidden')
@@ -236,7 +227,17 @@ function checkConvertState() {
   }
 }
 
-// File Reading Handler
+// Schedule a conversion, optionally immediately
+function scheduleConversion(immediate = false) {
+  if (debounceTimer) clearTimeout(debounceTimer)
+  if (!databaseLoaded) return
+  if (immediate) {
+    runConversion()
+  } else {
+    debounceTimer = setTimeout(runConversion, 600)
+  }
+}
+
 function handleFile(file: File) {
   if (!file) return
 
@@ -248,6 +249,7 @@ function handleFile(file: File) {
     const text = e.target?.result as string
     bibInput.value = text
     checkConvertState()
+    scheduleConversion(true)
   }
   reader.readAsText(file)
 }
@@ -272,7 +274,10 @@ dropzone.addEventListener('drop', (e) => {
 })
 
 // Input Change Listeners
-bibInput.addEventListener('input', checkConvertState)
+bibInput.addEventListener('input', () => {
+  checkConvertState()
+  scheduleConversion()
+})
 
 // File Upload Button Clicks
 uploadBtn.addEventListener('click', () => fileInput.click())
@@ -311,28 +316,8 @@ function resetStats() {
 }
 
 // Config strictness toggle handler
-strictnessRadios.forEach((radio) => {
-  radio.addEventListener('change', () => {
-    if (radio.checked && radio.value === 'fuzzy') {
-      thresholdContainer.style.display = 'flex'
-    } else {
-      thresholdContainer.style.display = 'none'
-    }
-    // Auto-reconvert if input exists to make UX dynamic
-    if (bibInput.value.trim().length > 0) {
-      runConversion()
-    }
-  })
-})
-
-// Slider value label update & auto-reconvert
-thresholdSlider.addEventListener('input', () => {
-  thresholdValue.textContent = thresholdSlider.value
-})
-thresholdSlider.addEventListener('change', () => {
-  if (bibInput.value.trim().length > 0) {
-    runConversion()
-  }
+strictnessSelect.addEventListener('change', () => {
+  scheduleConversion(true)
 })
 
 // Database source change handler
@@ -380,20 +365,12 @@ dbSourceSelect.addEventListener('change', async () => {
   }
 })
 
-// Style change auto-reconvert
 abbrStyleSelect.addEventListener('change', () => {
-  if (bibInput.value.trim().length > 0) {
-    runConversion()
-  }
+  scheduleConversion(true)
 })
 
-// Target fields auto-reconvert
-;[targetJournal, targetBooktitle].forEach((checkbox) => {
-  checkbox.addEventListener('change', () => {
-    if (bibInput.value.trim().length > 0) {
-      runConversion()
-    }
-  })
+fieldsSelect.addEventListener('change', () => {
+  scheduleConversion(true)
 })
 
 // Main Conversion Routine
@@ -404,17 +381,12 @@ function runConversion() {
   const fields = findJournalFields(content)
 
   // Get settings
-  let strictness: 'strict' | 'normal' | 'fuzzy' = 'normal'
-  for (const r of strictnessRadios) {
-    if (r.checked) {
-      strictness = r.value as 'strict' | 'normal' | 'fuzzy'
-      break
-    }
-  }
-
-  const threshold = parseFloat(thresholdSlider.value)
-  const checkJournal = targetJournal.checked
-  const checkBooktitle = targetBooktitle.checked
+  const val = strictnessSelect.value  // e.g. 'strict', 'normal', 'fuzzy-0.75'
+  const strictness: 'strict' | 'normal' | 'fuzzy' = val.startsWith('fuzzy') ? 'fuzzy' : (val as 'strict' | 'normal')
+  const threshold = val.startsWith('fuzzy') ? parseFloat(val.split('-')[1]) : 0.75
+  const fieldsVal = fieldsSelect.value  // 'journal' | 'booktitle' | 'both'
+  const checkJournal = fieldsVal === 'journal' || fieldsVal === 'both'
+  const checkBooktitle = fieldsVal === 'booktitle' || fieldsVal === 'both'
   const styleVal = abbrStyleSelect.value as 'wos' | 'iso' | 'title-dotless'
 
   // Filter matches according to checkbox selection
@@ -462,7 +434,28 @@ function runConversion() {
     }
   }
 
+  // Snapshot current candidate selections by journal value to preserve them
+  const selectionSnapshot = new Map<string, number>()
+  activeMatches.forEach((item) => {
+    selectionSnapshot.set(item.match.value.toLowerCase().trim(), item.selectedIndex)
+  })
+
   updateConversionOutput()
+  renderDiffView()
+  updateUnificationSection()
+
+  // Restore user candidate selections where journal name is unchanged
+  activeMatches.forEach((item) => {
+    const key = item.match.value.toLowerCase().trim()
+    if (selectionSnapshot.has(key)) {
+      const savedIdx = selectionSnapshot.get(key)!
+      if (savedIdx < item.candidates.length) {
+        item.selectedIndex = savedIdx
+      }
+    }
+  })
+
+  // Re-render diff to reflect restored selections
   renderDiffView()
   updateUnificationSection()
 
@@ -682,8 +675,7 @@ function renderDiffView() {
   outputView.appendChild(diffList)
 }
 
-// Convert Button Click
-convertBtn.addEventListener('click', runConversion)
+// (Convert button removed — conversion is automatic)
 
 interface GroupEntry {
   match: BibFieldMatch
@@ -918,7 +910,7 @@ function updateUnificationSection() {
       btn.className = 'btn btn-secondary btn-sm'
       btn.textContent = 'Customize'
       btn.addEventListener('click', () => {
-        tabCustomRules.click()
+        openDrawer(drawerCustomRules, toggleCustomRulesDrawer)
         customJournalInput.value = issue.group.canonicalName
         customAbbrInput.value = issue.group.entries[0].selectedAbbr
         customAbbrInput.focus()
@@ -946,7 +938,7 @@ function updateUnificationSection() {
       btn.className = 'btn btn-secondary btn-sm'
       btn.textContent = 'Override'
       btn.addEventListener('click', () => {
-        tabCustomRules.click()
+        openDrawer(drawerCustomRules, toggleCustomRulesDrawer)
         customJournalInput.value = issue.group.canonicalName
         customAbbrInput.value = matched.selectedAbbr
         customAbbrInput.focus()
@@ -961,45 +953,34 @@ function updateUnificationSection() {
   })
 }
 
-// Rules Panel Header Collapsible Toggle
-rulesPanelHeader.addEventListener('click', () => {
-  const isCollapsed = rulesPanel.classList.toggle('collapsed')
-  if (isCollapsed) {
-    rulesPanelContent.style.display = 'none'
-    toggleRulesBtn.style.transform = 'rotate(0deg)'
-  } else {
-    rulesPanelContent.style.display = 'block'
-    toggleRulesBtn.style.transform = 'rotate(180deg)'
-  }
-})
+// Drawer toggle helpers
+function openDrawer(drawer: HTMLDivElement, btn: HTMLButtonElement) {
+  const allDrawers = [drawerCustomRules, drawerUnification]
+  const allBtns = [toggleCustomRulesDrawer, toggleUnificationDrawer]
+  const isAlreadyOpen = drawer.classList.contains('open')
 
-// Tab Switching Listener
-const tabButtons = [tabCustomRules, tabUnification]
-tabButtons.forEach((btn) => {
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation()
-    if (rulesPanel.classList.contains('collapsed')) {
-      rulesPanel.classList.remove('collapsed')
-      rulesPanelContent.style.display = 'block'
-      toggleRulesBtn.style.transform = 'rotate(180deg)'
-    }
-
-    tabButtons.forEach((b) => b.classList.remove('active'))
-    btn.classList.add('active')
-
-    const targetTabId = btn.getAttribute('data-tab')
-    document.querySelectorAll('.tab-content').forEach((content) => {
-      const el = content as HTMLDivElement
-      if (el.id === targetTabId) {
-        el.style.display = 'block'
-      } else {
-        el.style.display = 'none'
-      }
-    })
+  // Close everything first
+  allDrawers.forEach((d) => d.classList.remove('open'))
+  allBtns.forEach((b) => {
+    b.classList.remove('active')
+    b.setAttribute('aria-expanded', 'false')
   })
-})
 
-// Add Rule Action
+  // Toggle open if it was closed
+  if (!isAlreadyOpen) {
+    drawer.classList.add('open')
+    btn.classList.add('active')
+    btn.setAttribute('aria-expanded', 'true')
+  }
+}
+
+toggleCustomRulesDrawer.addEventListener('click', () =>
+  openDrawer(drawerCustomRules, toggleCustomRulesDrawer)
+)
+toggleUnificationDrawer.addEventListener('click', () =>
+  openDrawer(drawerUnification, toggleUnificationDrawer)
+)
+
 addRuleBtn.addEventListener('click', () => {
   const journal = customJournalInput.value.trim()
   const abbr = customAbbrInput.value.trim()
@@ -1016,9 +997,7 @@ addRuleBtn.addEventListener('click', () => {
   customJournalInput.value = ''
   customAbbrInput.value = ''
 
-  if (bibInput.value.trim().length > 0) {
-    runConversion()
-  }
+  scheduleConversion(true)
 })
 
 // Persistent Cookie Checkbox Listener
@@ -1086,20 +1065,20 @@ unifyAllBtn.addEventListener('click', () => {
   }
 })
 
-// Convert Button Click
-convertBtn.addEventListener('click', runConversion)
+// (second convertBtn listener — removed)
 
 // Copy to Clipboard Action
 copyBtn.addEventListener('click', async () => {
   if (!convertedContent) return
   try {
     await navigator.clipboard.writeText(convertedContent)
-    const originalText = copyBtn.textContent
-    copyBtn.textContent = 'Copied!'
+    const label = copyBtn.querySelector('span')!
+    const orig = label.textContent
+    label.textContent = 'Copied!'
     copyBtn.style.borderColor = 'var(--success)'
     setTimeout(() => {
-      copyBtn.textContent = originalText
-      copyBtn.style.borderColor = 'var(--border-color)'
+      label.textContent = orig
+      copyBtn.style.borderColor = ''
     }, 2000)
   } catch (err) {
     console.error('Failed to copy text:', err)
