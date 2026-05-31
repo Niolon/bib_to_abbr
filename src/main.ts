@@ -35,8 +35,12 @@ const outputView = document.getElementById('outputView') as HTMLDivElement
 const diffPlaceholder = document.getElementById('diffPlaceholder') as HTMLDivElement
 
 // Drawer UI Elements
-const toggleCustomRulesDrawer = document.getElementById('toggleCustomRulesDrawer') as HTMLButtonElement
-const toggleUnificationDrawer = document.getElementById('toggleUnificationDrawer') as HTMLButtonElement
+const toggleCustomRulesDrawer = document.getElementById(
+  'toggleCustomRulesDrawer',
+) as HTMLButtonElement
+const toggleUnificationDrawer = document.getElementById(
+  'toggleUnificationDrawer',
+) as HTMLButtonElement
 const drawerCustomRules = document.getElementById('drawerCustomRules') as HTMLDivElement
 const drawerUnification = document.getElementById('drawerUnification') as HTMLDivElement
 const inconsistencyBadge = document.getElementById('inconsistencyBadge') as HTMLSpanElement
@@ -381,10 +385,12 @@ function runConversion() {
   const fields = findJournalFields(content)
 
   // Get settings
-  const val = strictnessSelect.value  // e.g. 'strict', 'normal', 'fuzzy-0.75'
-  const strictness: 'strict' | 'normal' | 'fuzzy' = val.startsWith('fuzzy') ? 'fuzzy' : (val as 'strict' | 'normal')
+  const val = strictnessSelect.value // e.g. 'strict', 'normal', 'fuzzy-0.75'
+  const strictness: 'strict' | 'normal' | 'fuzzy' = val.startsWith('fuzzy')
+    ? 'fuzzy'
+    : (val as 'strict' | 'normal')
   const threshold = val.startsWith('fuzzy') ? parseFloat(val.split('-')[1]) : 0.75
-  const fieldsVal = fieldsSelect.value  // 'journal' | 'booktitle' | 'both'
+  const fieldsVal = fieldsSelect.value // 'journal' | 'booktitle' | 'both'
   const checkJournal = fieldsVal === 'journal' || fieldsVal === 'both'
   const checkBooktitle = fieldsVal === 'booktitle' || fieldsVal === 'both'
   const styleVal = abbrStyleSelect.value as 'wos' | 'iso' | 'title-dotless'
@@ -975,10 +981,10 @@ function openDrawer(drawer: HTMLDivElement, btn: HTMLButtonElement) {
 }
 
 toggleCustomRulesDrawer.addEventListener('click', () =>
-  openDrawer(drawerCustomRules, toggleCustomRulesDrawer)
+  openDrawer(drawerCustomRules, toggleCustomRulesDrawer),
 )
 toggleUnificationDrawer.addEventListener('click', () =>
-  openDrawer(drawerUnification, toggleUnificationDrawer)
+  openDrawer(drawerUnification, toggleUnificationDrawer),
 )
 
 addRuleBtn.addEventListener('click', () => {

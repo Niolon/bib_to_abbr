@@ -21,18 +21,18 @@
   --rule-strong: #b5b6b1;
 
   /* Technical Indigo — crisp, modern academic primary */
-  --accent: #2b4c7e; 
-  --accent-ink: #ffffff; 
+  --accent: #2b4c7e;
+  --accent-ink: #ffffff;
   --accent-soft: rgba(43, 76, 126, 0.08);
 
   /* Cinnabar — sharper, more urgent than oxblood */
-  --red: #b83a2b; 
+  --red: #b83a2b;
   --red-soft: rgba(184, 58, 43, 0.08);
   /* Viridian — clean, scientific green */
-  --green: #2e7d54; 
+  --green: #2e7d54;
   --green-soft: rgba(46, 125, 84, 0.08);
   /* Saffron — clearer caution color */
-  --ochre: #a86c00; 
+  --ochre: #a86c00;
   --ochre-soft: rgba(168, 108, 0, 0.1);
 
   /* Shifted from antique serif to modern academic preprint fonts */
@@ -400,8 +400,6 @@ main {
   white-space: nowrap;
 }
 
-
-
 .select-wrap {
   position: relative;
   display: inline-flex;
@@ -504,8 +502,6 @@ input[type='checkbox']:focus-visible {
   color: var(--ink);
   background: var(--well);
 }
-
-
 
 .rules-split {
   display: grid;
@@ -1001,8 +997,6 @@ textarea::placeholder {
   background: var(--accent);
   color: var(--accent-ink);
 }
-
-
 
 .btn-sm {
   font-size: 0.74rem;
