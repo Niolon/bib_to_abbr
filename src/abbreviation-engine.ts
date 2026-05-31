@@ -145,7 +145,35 @@ export async function loadDatabase(source: 'ncbi' | 'iso', url: string): Promise
       }
     }
   }
+  // Inject short-form aliases so e.g. "Acta Cryst. A" resolves to the current section entry
+  for (const [alias, canonicalName] of Object.entries(JOURNAL_ALIASES)) {
+    const normAlias = normalizeString(alias)
+    const normCanonical = normalizeString(canonicalName)
+    const canonicalEntry = dbState.normalizedDb.get(normCanonical)
+    if (canonicalEntry && !dbState.normalizedDb.has(normAlias)) {
+      dbState.normalizedDb.set(normAlias, canonicalEntry)
+    }
+  }
+
   dbState.isLoaded = true
+}
+
+// Short-form aliases mapped to their canonical full journal names in the databases.
+// Both ISO and NCBI databases are checked; the alias is injected wherever the
+// canonical name is found.
+const JOURNAL_ALIASES: Record<string, string> = {
+  'Acta Cryst A': 'Acta Crystallographica, Section A: Foundations and Advances',
+  'Acta Cryst B': 'Acta Crystallographica, Section B: Structural Science, Crystal Engineering and Materials',
+  'Acta Cryst C': 'Acta Crystallographica, Section C: Structural Chemistry',
+  'Acta Cryst D': 'Acta Crystallographica, Section D: Biological Crystallography',
+  'Acta Cryst E': 'Acta Crystallographica, Section E: Crystallographic Communications',
+  'Acta Cryst F': 'Acta Crystallographica, Section F: Structural Biology Communications',
+  'Acta Crystallogr A': 'Acta Crystallographica, Section A: Foundations and Advances',
+  'Acta Crystallogr B': 'Acta Crystallographica, Section B: Structural Science, Crystal Engineering and Materials',
+  'Acta Crystallogr C': 'Acta Crystallographica, Section C: Structural Chemistry',
+  'Acta Crystallogr D': 'Acta Crystallographica, Section D: Biological Crystallography',
+  'Acta Crystallogr E': 'Acta Crystallographica, Section E: Crystallographic Communications',
+  'Acta Crystallogr F': 'Acta Crystallographica, Section F: Structural Biology Communications',
 }
 
 const caseOverrides: Record<string, string> = {
