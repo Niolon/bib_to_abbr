@@ -200,7 +200,7 @@ async function init() {
 
     databaseLoaded = true
     if (dbStatus) {
-      dbStatus.textContent = 'Database Ready'
+      dbStatus.textContent = 'Entries loaded'
       dbStatus.className = 'db-badge ready'
     }
 
@@ -210,7 +210,7 @@ async function init() {
   } catch (error) {
     console.error('Failed to load journal abbreviation database:', error)
     if (dbStatus) {
-      dbStatus.textContent = 'Error loading database'
+      dbStatus.textContent = 'Error loading entries'
       dbStatus.className = 'db-badge loading'
     }
   }
@@ -325,7 +325,7 @@ dbSourceSelect.addEventListener('change', async () => {
   const source = dbSourceSelect.value as 'ncbi' | 'iso' | 'iso-ncbi'
 
   if (dbStatus) {
-    dbStatus.textContent = 'Loading database...'
+    dbStatus.textContent = 'Loading Entries...'
     dbStatus.className = 'db-badge loading'
   }
   databaseLoaded = false
@@ -348,7 +348,7 @@ dbSourceSelect.addEventListener('change', async () => {
     }
     databaseLoaded = true
     if (dbStatus) {
-      dbStatus.textContent = 'Database Ready'
+      dbStatus.textContent = 'Entries Loaded'
       dbStatus.className = 'db-badge ready'
     }
     checkConvertState()
@@ -359,7 +359,7 @@ dbSourceSelect.addEventListener('change', async () => {
   } catch (error) {
     console.error('Failed to load journal abbreviation database:', error)
     if (dbStatus) {
-      dbStatus.textContent = 'Error loading database'
+      dbStatus.textContent = 'Error loading entries'
       dbStatus.className = 'db-badge loading'
     }
   }

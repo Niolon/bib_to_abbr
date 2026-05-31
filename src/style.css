@@ -5,62 +5,73 @@
    ============================================================================ */
 
 :root {
-  --paper: #f4eee1;
-  --surface: #fdfaf3;
-  --surface-2: #ece3d1;
-  --well: #f7f2e7;
+  /* Crisp, matte-coated paper. Neutral-cool instead of heavy yellow. */
+  --paper: #f6f6f4;
+  --surface: #ffffff;
+  --surface-2: #ecece9;
+  --well: #f0f0ed;
 
-  --ink: #23201a;
-  --ink-2: #6a6354;
-  --ink-3: #9b917f;
+  /* Deep charcoal instead of brown-black */
+  --ink: #1a1b1e;
+  --ink-2: #5c5f66;
+  --ink-3: #8a8d93;
 
-  --rule: #d9cfba;
-  --rule-strong: #bcad90;
+  /* Cooler, cleaner borders */
+  --rule: #d5d6d2;
+  --rule-strong: #b5b6b1;
 
-  --accent: #2c4a76; /* ink blue — primary actions, links, insertions */
-  --accent-ink: #f6f1e6; /* text on accent */
-  --accent-soft: rgba(44, 74, 118, 0.1);
+  /* Technical Indigo — crisp, modern academic primary */
+  --accent: #2b4c7e; 
+  --accent-ink: #ffffff; 
+  --accent-soft: rgba(43, 76, 126, 0.08);
 
-  --red: #a4341f; /* oxblood — deletions / unchanged / danger */
-  --red-soft: rgba(164, 52, 31, 0.1);
-  --green: #466b3f; /* olive — confident matches */
-  --green-soft: rgba(70, 107, 63, 0.1);
-  --ochre: #8f6213; /* fuzzy / caution */
-  --ochre-soft: rgba(143, 98, 19, 0.12);
+  /* Cinnabar — sharper, more urgent than oxblood */
+  --red: #b83a2b; 
+  --red-soft: rgba(184, 58, 43, 0.08);
+  /* Viridian — clean, scientific green */
+  --green: #2e7d54; 
+  --green-soft: rgba(46, 125, 84, 0.08);
+  /* Saffron — clearer caution color */
+  --ochre: #a86c00; 
+  --ochre-soft: rgba(168, 108, 0, 0.1);
 
-  --font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Public Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+  /* Shifted from antique serif to modern academic preprint fonts */
+  --font-serif: 'Charter', 'Bitstream Charter', 'Sitka Text', Cambria, serif;
+  --font-sans: 'Inter', 'Helvetica Neue', Helvetica, system-ui, sans-serif;
+  --font-mono: 'Fira Code', 'JetBrains Mono', 'IBM Plex Mono', monospace;
 
-  --shadow: 0 1px 0 rgba(35, 32, 26, 0.04), 0 10px 30px -18px rgba(35, 32, 26, 0.35);
+  /* Slightly sharper, less diffused shadows */
+  --shadow: 0 1px 2px rgba(26, 27, 30, 0.06), 0 8px 24px -8px rgba(26, 27, 30, 0.15);
   --radius: 4px;
 }
 
 [data-theme='dark'] {
-  --paper: #15130e;
-  --surface: #1d1a14;
-  --surface-2: #13110c;
-  --well: #181510;
+  /* Clean slate/charcoal instead of muddy dark roast */
+  --paper: #17181a;
+  --surface: #1e1f22;
+  --surface-2: #121315;
+  --well: #1a1b1d;
 
-  --ink: #ece4d2;
-  --ink-2: #a89e8a;
-  --ink-3: #756c5a;
+  --ink: #e6e7eb;
+  --ink-2: #9b9ea6;
+  --ink-3: #6c6f75;
 
-  --rule: #332e24;
-  --rule-strong: #4a4332;
+  --rule: #34363a;
+  --rule-strong: #4f5258;
 
-  --accent: #93b0db;
-  --accent-ink: #15130e;
-  --accent-soft: rgba(147, 176, 219, 0.14);
+  /* Luminous, readable dark mode equivalents */
+  --accent: #7ca1e3;
+  --accent-ink: #0d1117;
+  --accent-soft: rgba(124, 161, 227, 0.12);
 
-  --red: #d77c63;
-  --red-soft: rgba(215, 124, 99, 0.13);
-  --green: #93b078;
-  --green-soft: rgba(147, 176, 120, 0.13);
-  --ochre: #d0a256;
-  --ochre-soft: rgba(208, 162, 86, 0.14);
+  --red: #e57361;
+  --red-soft: rgba(229, 115, 97, 0.12);
+  --green: #6cb386;
+  --green-soft: rgba(108, 179, 134, 0.12);
+  --ochre: #e6ad4e;
+  --ochre-soft: rgba(230, 173, 78, 0.12);
 
-  --shadow: 0 1px 0 rgba(0, 0, 0, 0.4), 0 12px 34px -18px rgba(0, 0, 0, 0.7);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 34px -12px rgba(0, 0, 0, 0.8);
 }
 
 * {
@@ -158,11 +169,10 @@ header {
   display: inline-flex;
   color: var(--accent);
   flex: none;
-  transform: translateY(-0.105em);
 }
 .brand-mark svg {
   width: 0.78em;
-  height: 0.73m;
+  aspect-ratio: 1;
 }
 
 .brand p {
