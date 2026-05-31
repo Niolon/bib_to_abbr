@@ -45,7 +45,6 @@ const inconsistencyBadge = document.getElementById('inconsistencyBadge') as HTML
 // Tab Elements
 const tabCustomRules = document.getElementById('tabCustomRules') as HTMLButtonElement
 const tabUnification = document.getElementById('tabUnification') as HTMLButtonElement
-const tabDot = document.getElementById('tabDot') as HTMLSpanElement
 
 // Custom Rules Elements
 const customJournalInput = document.getElementById('customJournalInput') as HTMLInputElement
@@ -714,7 +713,6 @@ function updateUnificationSection() {
       </div>
     `
     inconsistencyBadge.style.display = 'none'
-    tabDot.style.display = 'none'
     unifyAllBtn.disabled = true
     return
   }
@@ -792,7 +790,6 @@ function updateUnificationSection() {
       </div>
     `
     inconsistencyBadge.style.display = 'none'
-    tabDot.style.display = 'none'
     unifyAllBtn.disabled = true
     return
   }
@@ -801,9 +798,8 @@ function updateUnificationSection() {
   unifyAllBtn.disabled = !hasUnifiableIssues
 
   const actionableIssues = issues.filter((iss) => iss.type !== 'already_abbreviated')
-  inconsistencyBadge.textContent = `${actionableIssues.length} Issue${actionableIssues.length !== 1 ? 's' : ''}`
+  inconsistencyBadge.textContent = `${actionableIssues.length}`
   inconsistencyBadge.style.display = actionableIssues.length > 0 ? 'inline-block' : 'none'
-  tabDot.style.display = actionableIssues.length > 0 ? 'inline-block' : 'none'
 
   issues.forEach((issue) => {
     const card = document.createElement('div')
@@ -980,7 +976,14 @@ rulesPanelHeader.addEventListener('click', () => {
 // Tab Switching Listener
 const tabButtons = [tabCustomRules, tabUnification]
 tabButtons.forEach((btn) => {
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation()
+    if (rulesPanel.classList.contains('collapsed')) {
+      rulesPanel.classList.remove('collapsed')
+      rulesPanelContent.style.display = 'block'
+      toggleRulesBtn.style.transform = 'rotate(180deg)'
+    }
+
     tabButtons.forEach((b) => b.classList.remove('active'))
     btn.classList.add('active')
 
