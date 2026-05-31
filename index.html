@@ -5,23 +5,54 @@
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BibTeX Journal Abbreviator | NCBI & ISO 4 Tool</title>
-    <meta name="description" content="A premium, fast, static web tool to automatically replace full journal names in BibTeX (.bib) files with NCBI (NLM/PubMed) and ISO 4 abbreviations using fuzzy string matching." />
+    <meta
+      name="description"
+      content="A premium, fast, static web tool to automatically replace full journal names in BibTeX (.bib) files with NCBI (NLM/PubMed) and ISO 4 abbreviations using fuzzy string matching."
+    />
   </head>
   <body>
     <header>
       <div class="header-container">
         <div class="brand">
           <h1>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-              <path d="M6 6h10"/>
-              <path d="M6 10h10"/>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+              <path d="M6 6h10" />
+              <path d="M6 10h10" />
             </svg>
             BibTeX Journal Abbreviator
           </h1>
           <p>Instantly replace bibliography journal names with NCBI or ISO abbreviations</p>
         </div>
-        <div class="db-badge warning" style="background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; padding: 0.35rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; display: flex; align-items: center; gap: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em; user-select: none;">⚠️ Use at your own risk</div>
+        <div
+          class="db-badge warning"
+          style="
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            font-weight: 600;
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            user-select: none;
+          "
+        >
+          ⚠️ Use at your own risk
+        </div>
       </div>
     </header>
 
@@ -31,28 +62,66 @@
         <div class="config-group">
           <span class="config-label">Match Strictness</span>
           <div class="radio-group">
-            <input type="radio" id="strictnessStrict" name="strictness" value="strict" class="radio-btn" />
+            <input
+              type="radio"
+              id="strictnessStrict"
+              name="strictness"
+              value="strict"
+              class="radio-btn"
+            />
             <label for="strictnessStrict" class="radio-label">Strict</label>
-            
-            <input type="radio" id="strictnessNormal" name="strictness" value="normal" class="radio-btn" checked />
+
+            <input
+              type="radio"
+              id="strictnessNormal"
+              name="strictness"
+              value="normal"
+              class="radio-btn"
+              checked
+            />
             <label for="strictnessNormal" class="radio-label">Normal</label>
-            
-            <input type="radio" id="strictnessFuzzy" name="strictness" value="fuzzy" class="radio-btn" />
+
+            <input
+              type="radio"
+              id="strictnessFuzzy"
+              name="strictness"
+              value="fuzzy"
+              class="radio-btn"
+            />
             <label for="strictnessFuzzy" class="radio-label">Fuzzy</label>
           </div>
         </div>
 
-        <div class="config-group" id="thresholdContainer" style="display: none;">
+        <div class="config-group" id="thresholdContainer" style="display: none">
           <span class="config-label">Fuzzy Threshold</span>
           <div class="slider-container">
-            <input type="range" id="thresholdSlider" min="0.5" max="0.95" step="0.05" value="0.75" />
+            <input
+              type="range"
+              id="thresholdSlider"
+              min="0.5"
+              max="0.95"
+              step="0.05"
+              value="0.75"
+            />
             <span id="thresholdValue" class="slider-value">0.75</span>
           </div>
         </div>
 
         <div class="config-group">
           <span class="config-label">Database Source</span>
-          <select id="dbSource" style="background: rgba(20, 28, 48, 0.9); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.35rem 0.5rem; border-radius: 6px; outline: none; font-size: 0.85rem; cursor: pointer;">
+          <select
+            id="dbSource"
+            style="
+              background: rgba(20, 28, 48, 0.9);
+              border: 1px solid var(--border-color);
+              color: var(--text-primary);
+              padding: 0.35rem 0.5rem;
+              border-radius: 6px;
+              outline: none;
+              font-size: 0.85rem;
+              cursor: pointer;
+            "
+          >
             <option value="ncbi" selected>NCBI (NLM/PubMed)</option>
             <option value="iso">ISO 4 (JabRef/LTWA)</option>
             <option value="iso-ncbi">ISO 4 (with NCBI fallback)</option>
@@ -61,7 +130,19 @@
 
         <div class="config-group">
           <span class="config-label">Abbreviation Style</span>
-          <select id="abbrStyle" style="background: rgba(20, 28, 48, 0.9); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.35rem 0.5rem; border-radius: 6px; outline: none; font-size: 0.85rem; cursor: pointer;">
+          <select
+            id="abbrStyle"
+            style="
+              background: rgba(20, 28, 48, 0.9);
+              border: 1px solid var(--border-color);
+              color: var(--text-primary);
+              padding: 0.35rem 0.5rem;
+              border-radius: 6px;
+              outline: none;
+              font-size: 0.85rem;
+              cursor: pointer;
+            "
+          >
             <option value="iso" selected>ISO Style (Title Case, dots)</option>
             <option value="wos">WoS Style (ALL CAPS, dotless)</option>
             <option value="title-dotless">Title Case (dotless)</option>
@@ -85,76 +166,296 @@
 
       <!-- Rules & Unification Panel (Collapsible) -->
       <section class="panel rules-panel collapsed" id="rulesPanel">
-        <div class="rules-panel-header" id="rulesPanelHeader" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
-          <div class="rules-panel-title" style="display: flex; align-items: center; gap: 0.75rem;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-cyan);">
-              <path d="M12 20h9"/>
-              <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+        <div
+          class="rules-panel-header"
+          id="rulesPanelHeader"
+          style="
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+          "
+        >
+          <div class="rules-panel-title" style="display: flex; align-items: center; gap: 0.75rem">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              style="color: var(--accent-cyan)"
+            >
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
             </svg>
-            <h2 style="font-size: 1.1rem; font-weight: 600;">Journal Rules & Unification</h2>
-            <span class="badge badge-warning" id="inconsistencyBadge" style="display: none; background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.15rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600;">0 Issues</span>
+            <h2 style="font-size: 1.1rem; font-weight: 600">Journal Rules & Unification</h2>
+            <span
+              class="badge badge-warning"
+              id="inconsistencyBadge"
+              style="
+                display: none;
+                background: rgba(245, 158, 11, 0.15);
+                color: var(--warning);
+                border: 1px solid rgba(245, 158, 11, 0.3);
+                padding: 0.15rem 0.5rem;
+                border-radius: 9999px;
+                font-size: 0.7rem;
+                font-weight: 600;
+              "
+              >0 Issues</span
+            >
           </div>
-          <button class="btn-toggle-panel" id="toggleRulesBtn" style="background: transparent; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.25rem; transition: transform 0.3s ease;">
-            <svg class="chevron-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"/>
+          <button
+            class="btn-toggle-panel"
+            id="toggleRulesBtn"
+            style="
+              background: transparent;
+              border: none;
+              color: var(--text-secondary);
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 0.25rem;
+              transition: transform 0.3s ease;
+            "
+          >
+            <svg
+              class="chevron-icon"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
         </div>
-        
-        <div class="rules-panel-content" id="rulesPanelContent" style="display: none; margin-top: 1.25rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
+
+        <div
+          class="rules-panel-content"
+          id="rulesPanelContent"
+          style="
+            display: none;
+            margin-top: 1.25rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.25rem;
+          "
+        >
           <div class="rules-tabs">
-            <button class="tab-btn active" id="tabCustomRules" data-tab="custom-rules-tab">Custom Rules</button>
+            <button class="tab-btn active" id="tabCustomRules" data-tab="custom-rules-tab">
+              Custom Rules
+            </button>
             <button class="tab-btn" id="tabUnification" data-tab="unification-tab">
               Unification & Inconsistencies
-              <span class="tab-dot" id="tabDot" style="display: none;"></span>
+              <span class="tab-dot" id="tabDot" style="display: none"></span>
             </button>
           </div>
-          
+
           <div class="tab-content active" id="custom-rules-tab">
             <div class="rules-split">
               <!-- Add rule form -->
               <div class="rule-form">
-                <h3 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-primary);">Add Custom Rule</h3>
-                <div class="form-group" style="margin-bottom: 0.75rem;">
-                  <label for="customJournalInput" style="display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.25rem;">Original Journal Name</label>
-                  <input type="text" id="customJournalInput" placeholder="e.g. Journal of Applied Physics" style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.45rem 0.6rem; color: var(--text-primary); font-size: 0.85rem; outline: none; transition: border-color 0.2s;" />
+                <h3
+                  style="
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    margin-bottom: 0.75rem;
+                    color: var(--text-primary);
+                  "
+                >
+                  Add Custom Rule
+                </h3>
+                <div class="form-group" style="margin-bottom: 0.75rem">
+                  <label
+                    for="customJournalInput"
+                    style="
+                      display: block;
+                      font-size: 0.75rem;
+                      font-weight: 600;
+                      text-transform: uppercase;
+                      color: var(--text-secondary);
+                      margin-bottom: 0.25rem;
+                    "
+                    >Original Journal Name</label
+                  >
+                  <input
+                    type="text"
+                    id="customJournalInput"
+                    placeholder="e.g. Journal of Applied Physics"
+                    style="
+                      width: 100%;
+                      background: rgba(0, 0, 0, 0.2);
+                      border: 1px solid var(--border-color);
+                      border-radius: 6px;
+                      padding: 0.45rem 0.6rem;
+                      color: var(--text-primary);
+                      font-size: 0.85rem;
+                      outline: none;
+                      transition: border-color 0.2s;
+                    "
+                  />
                 </div>
-                <div class="form-group" style="margin-bottom: 0.75rem;">
-                  <label for="customAbbrInput" style="display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.25rem;">Custom Abbreviation</label>
-                  <input type="text" id="customAbbrInput" placeholder="e.g. J. Appl. Phys." style="width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.45rem 0.6rem; color: var(--text-primary); font-size: 0.85rem; outline: none; transition: border-color 0.2s;" />
+                <div class="form-group" style="margin-bottom: 0.75rem">
+                  <label
+                    for="customAbbrInput"
+                    style="
+                      display: block;
+                      font-size: 0.75rem;
+                      font-weight: 600;
+                      text-transform: uppercase;
+                      color: var(--text-secondary);
+                      margin-bottom: 0.25rem;
+                    "
+                    >Custom Abbreviation</label
+                  >
+                  <input
+                    type="text"
+                    id="customAbbrInput"
+                    placeholder="e.g. J. Appl. Phys."
+                    style="
+                      width: 100%;
+                      background: rgba(0, 0, 0, 0.2);
+                      border: 1px solid var(--border-color);
+                      border-radius: 6px;
+                      padding: 0.45rem 0.6rem;
+                      color: var(--text-primary);
+                      font-size: 0.85rem;
+                      outline: none;
+                      transition: border-color 0.2s;
+                    "
+                  />
                 </div>
-                <button class="btn btn-primary" id="addRuleBtn" style="width: 100%; padding: 0.45rem;">Add Custom Rule</button>
-                
-                <div class="cookie-persistence" style="margin-top: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-                  <input type="checkbox" id="cookiePersistCheckbox" checked style="cursor: pointer; accent-color: var(--accent-cyan);" />
-                  <label for="cookiePersistCheckbox" style="font-size: 0.75rem; color: var(--text-secondary); cursor: pointer; user-select: none;">
+                <button
+                  class="btn btn-primary"
+                  id="addRuleBtn"
+                  style="width: 100%; padding: 0.45rem"
+                >
+                  Add Custom Rule
+                </button>
+
+                <div
+                  class="cookie-persistence"
+                  style="margin-top: 0.75rem; display: flex; align-items: center; gap: 0.5rem"
+                >
+                  <input
+                    type="checkbox"
+                    id="cookiePersistCheckbox"
+                    checked
+                    style="cursor: pointer; accent-color: var(--accent-cyan)"
+                  />
+                  <label
+                    for="cookiePersistCheckbox"
+                    style="
+                      font-size: 0.75rem;
+                      color: var(--text-secondary);
+                      cursor: pointer;
+                      user-select: none;
+                    "
+                  >
                     Remember rules in a cookie
                   </label>
                 </div>
               </div>
-              
+
               <!-- Rules List -->
               <div class="rules-list-container">
-                <h3 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-primary);">Active Custom Rules</h3>
+                <h3
+                  style="
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    margin-bottom: 0.75rem;
+                    color: var(--text-primary);
+                  "
+                >
+                  Active Custom Rules
+                </h3>
                 <div class="rules-list" id="rulesList">
-                  <div class="empty-rules" style="color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 1.5rem 0;">No custom rules defined yet. Add one!</div>
+                  <div
+                    class="empty-rules"
+                    style="
+                      color: var(--text-muted);
+                      font-size: 0.8rem;
+                      text-align: center;
+                      padding: 1.5rem 0;
+                    "
+                  >
+                    No custom rules defined yet. Add one!
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          
-          <div class="tab-content" id="unification-tab" style="display: none;">
+
+          <div class="tab-content" id="unification-tab" style="display: none">
             <div class="unification-container">
-              <div class="unification-header-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-                <p class="unification-desc" style="font-size: 0.8rem; color: var(--text-secondary); max-width: 70%;">Analyze your loaded BibTeX to find inconsistencies like mixed abbreviation formats or missing database matches.</p>
-                <button class="btn btn-secondary" id="unifyAllBtn" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;" disabled>Unify All Automatically</button>
+              <div
+                class="unification-header-bar"
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-bottom: 1rem;
+                  flex-wrap: wrap;
+                  gap: 0.5rem;
+                "
+              >
+                <p
+                  class="unification-desc"
+                  style="font-size: 0.8rem; color: var(--text-secondary); max-width: 70%"
+                >
+                  Analyze your loaded BibTeX to find inconsistencies like mixed abbreviation formats
+                  or missing database matches.
+                </p>
+                <button
+                  class="btn btn-secondary"
+                  id="unifyAllBtn"
+                  style="font-size: 0.75rem; padding: 0.35rem 0.75rem"
+                  disabled
+                >
+                  Unify All Automatically
+                </button>
               </div>
-              <div class="inconsistencies-list" id="inconsistenciesList" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                <div class="empty-inconsistencies" style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.8rem; padding: 2rem 0; text-align: center;">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="12" y1="16" x2="12" y2="12"/>
-                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+              <div
+                class="inconsistencies-list"
+                id="inconsistenciesList"
+                style="display: flex; flex-direction: column; gap: 0.75rem"
+              >
+                <div
+                  class="empty-inconsistencies"
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 0.5rem;
+                    color: var(--text-muted);
+                    font-size: 0.8rem;
+                    padding: 2rem 0;
+                    text-align: center;
+                  "
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="color: var(--text-muted)"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
                   </svg>
                   <p>Convert references to scan for inconsistencies.</p>
                 </div>
@@ -170,45 +471,83 @@
         <div class="panel-column">
           <div class="panel-header">
             <h2 class="panel-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
               </svg>
               Input BibTeX
             </h2>
             <div class="btn-group">
               <button id="uploadBtn" class="btn btn-secondary">Upload File</button>
-              <input type="file" id="fileInput" accept=".bib,.txt" style="display: none;" />
+              <input type="file" id="fileInput" accept=".bib,.txt" style="display: none" />
               <button id="clearBtn" class="btn btn-secondary">Clear</button>
             </div>
           </div>
 
           <div class="panel dropzone" id="dropzone">
             <div class="dropzone-overlay">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-cyan);">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                style="color: var(--accent-cyan)"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
               </svg>
               <p>Drop your .bib file here</p>
             </div>
-            
+
             <div class="textarea-container">
-              <textarea id="bibInput" placeholder="Paste your BibTeX contents here, or drag & drop a .bib file..."></textarea>
+              <textarea
+                id="bibInput"
+                placeholder="Paste your BibTeX contents here, or drag & drop a .bib file..."
+              ></textarea>
               <div class="upload-cta" id="uploadCta">
                 <div class="upload-icon">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  <svg
+                    width="48"
+                    height="48"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                   </svg>
                 </div>
-                <p style="font-size: 1rem; color: var(--text-secondary);">Start by pasting BibTeX code or uploading a file</p>
+                <p style="font-size: 1rem; color: var(--text-secondary)">
+                  Start by pasting BibTeX code or uploading a file
+                </p>
                 <button id="ctaUploadBtn" class="btn upload-cta-btn">Select File</button>
               </div>
             </div>
           </div>
-          
-          <button id="convertBtn" class="btn btn-primary" style="width: 100%; padding: 0.75rem;" disabled>
+
+          <button
+            id="convertBtn"
+            class="btn btn-primary"
+            style="width: 100%; padding: 0.75rem"
+            disabled
+          >
             Convert References
           </button>
         </div>
@@ -217,10 +556,19 @@
         <div class="panel-column">
           <div class="panel-header">
             <h2 class="panel-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
               Converted Results
             </h2>
@@ -253,10 +601,19 @@
           <div class="output-container">
             <div class="output-view" id="outputView">
               <div class="diff-placeholder" id="diffPlaceholder">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="16" x2="12" y2="12"/>
-                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                <svg
+                  width="36"
+                  height="36"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
                 </svg>
                 <p>Abbreviation diff and download options will appear here after conversion.</p>
               </div>

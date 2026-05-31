@@ -1,16 +1,38 @@
 {
   "name": "bib-to-abbr",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Client-side web tool for abbreviating journal names in BibTeX files using ISO 4 and NCBI databases",
+  "author": "Niklas",
+  "license": "MIT",
+  "keywords": [
+    "bibtex",
+    "journal abbreviation",
+    "iso4",
+    "latex",
+    "ncbi",
+    "bibliography"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
     "scrape": "python3 scripts/scrape_iso.py && python3 scripts/scrape_ncbi.py"
   },
   "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^25.9.1",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.0.0",
+    "prettier": "^3.0.0",
     "typescript": "~6.0.2",
-    "vite": "^8.0.12"
+    "typescript-eslint": "^8.0.0",
+    "vite": "^8.0.12",
+    "vitest": "^3.0.0"
   }
 }
