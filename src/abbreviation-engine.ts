@@ -163,13 +163,15 @@ export async function loadDatabase(source: 'ncbi' | 'iso', url: string): Promise
 // canonical name is found.
 const JOURNAL_ALIASES: Record<string, string> = {
   'Acta Cryst A': 'Acta Crystallographica, Section A: Foundations and Advances',
-  'Acta Cryst B': 'Acta Crystallographica, Section B: Structural Science, Crystal Engineering and Materials',
+  'Acta Cryst B':
+    'Acta Crystallographica, Section B: Structural Science, Crystal Engineering and Materials',
   'Acta Cryst C': 'Acta Crystallographica, Section C: Structural Chemistry',
   'Acta Cryst D': 'Acta Crystallographica, Section D: Biological Crystallography',
   'Acta Cryst E': 'Acta Crystallographica, Section E: Crystallographic Communications',
   'Acta Cryst F': 'Acta Crystallographica, Section F: Structural Biology Communications',
   'Acta Crystallogr A': 'Acta Crystallographica, Section A: Foundations and Advances',
-  'Acta Crystallogr B': 'Acta Crystallographica, Section B: Structural Science, Crystal Engineering and Materials',
+  'Acta Crystallogr B':
+    'Acta Crystallographica, Section B: Structural Science, Crystal Engineering and Materials',
   'Acta Crystallogr C': 'Acta Crystallographica, Section C: Structural Chemistry',
   'Acta Crystallogr D': 'Acta Crystallographica, Section D: Biological Crystallography',
   'Acta Crystallogr E': 'Acta Crystallographica, Section E: Crystallographic Communications',

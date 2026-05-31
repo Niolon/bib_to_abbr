@@ -110,3 +110,26 @@ describe('findAbbreviationCandidates', () => {
     expect(noFuzzy).toBe(true)
   })
 })
+
+describe('Acta Cryst short-form aliases', () => {
+  it.each(['A', 'B', 'C', 'D', 'E', 'F'])('resolves "Acta Cryst. %s" in ISO mode', (section) => {
+    setDatabaseSource('iso')
+    const result = findAbbreviation(`Acta Cryst. ${section}`, 'normal')
+    expect(result.matchType).not.toBe('none')
+    expect(result.abbreviation).toMatch(new RegExp(`Acta Crystallogr.*${section}`, 'i'))
+  })
+
+  it.each(['A', 'B', 'C', 'D', 'E', 'F'])('resolves "Acta Cryst. %s" in NCBI mode', (section) => {
+    setDatabaseSource('ncbi')
+    const result = findAbbreviation(`Acta Cryst. ${section}`, 'normal')
+    expect(result.matchType).not.toBe('none')
+    expect(result.abbreviation).toMatch(new RegExp(`Acta Crystallogr.*${section}`, 'i'))
+  })
+
+  it('resolves "Acta Crystallogr. A" as an alias', () => {
+    setDatabaseSource('iso')
+    const result = findAbbreviation('Acta Crystallogr. A', 'normal')
+    expect(result.matchType).not.toBe('none')
+    expect(result.abbreviation).toMatch(/Acta Crystallogr.*A/i)
+  })
+})
